@@ -4,7 +4,10 @@ from langchain_core.prompts import ChatPromptTemplate
 from app.config import settings
 
 def revise_blog_content(request: BlogReviseRequest) -> BlogReviseResponse:
-    """Uses LLM to revise existing markdown content based on user instructions."""
+    """
+    Uses LLM to revise existing markdown content based on user instructions.
+    This acts like an intelligent chat-based editor for the user.
+    """
     llm = ChatGroq(api_key=settings.GROQ_API_KEY, model="llama-3.3-70b-versatile")
     structured_llm = llm.with_structured_output(BlogReviseResponse, method="json_mode")
     

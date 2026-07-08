@@ -2,6 +2,10 @@ import requests
 from bs4 import BeautifulSoup
 
 def extract_text_from_url(url: str) -> str:
+    """
+    Fetches a webpage and extracts clean, readable text by stripping out HTML tags, 
+    scripts, and styles.
+    """
     try:
         # Provide a common user agent to prevent basic blocking
         headers = {
@@ -13,13 +17,13 @@ def extract_text_from_url(url: str) -> str:
         
         soup = BeautifulSoup(response.text, "html.parser")
         
-        # Remove script and style elements
+        # Remove structural and functional elements that don't contain article content
         for script in soup(["script", "style", "noscript", "header", "footer", "nav"]):
             script.decompose()
             
         text = soup.get_text(separator="\n")
         
-        # Clean up empty lines
+        # Clean up empty lines and normalize whitespace
         lines = [line.strip() for line in text.splitlines() if line.strip()]
         clean_text = "\n".join(lines)
         

@@ -18,12 +18,14 @@ def extract_transcript_from_youtube(url: str) -> str:
         
         # Try to get English manually created transcripts, fallback to generated English, fallback to first available
         try:
+            # 1. Prefer high-quality human-made English transcripts
             transcript = transcript_list.find_manually_created_transcript(['en', 'en-US', 'en-GB'])
         except:
             try:
+                # 2. Fallback to auto-generated English captions
                 transcript = transcript_list.find_generated_transcript(['en', 'en-US', 'en-GB'])
             except:
-                # Fallback to the very first transcript available if no English exists
+                # 3. Absolute fallback: Just grab the first available transcript (might be in another language)
                 transcript = list(transcript_list)[0]
             
         transcript_data = transcript.fetch()

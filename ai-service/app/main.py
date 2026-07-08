@@ -11,6 +11,10 @@ from app.graph.revise_workflow import revise_blog_content
 app = FastAPI(title="AI Worker Microservice")
 
 def verify_internal_secret(x_internal_secret: str = Header(...)):
+    """
+    Security Bouncer: Validates that incoming requests have the correct internal secret.
+    This prevents external users from directly hitting this unauthenticated worker.
+    """
     if settings.ENV != "development":
         if x_internal_secret != settings.INTERNAL_GATEWAY_SECRET:
             raise HTTPException(status_code=403, detail="Forbidden: Invalid internal gateway secret")
@@ -32,18 +36,22 @@ async def generate_multimodal(
     pdf_file: Optional[UploadFile] = File(None),
     secret: str = Depends(verify_internal_secret)
 ):
+    # Extract text from various sources. If extraction returns an ERROR string, we log it and keep it empty to prevent confusing the AI.
     pdf_text = ""
     if pdf_file:
         content = await pdf_file.read()
-        pdf_text = extract_text_from_pdf(content)
+        res = extract_text_from_pdf(content)
+        pdf_text = "" if res.startswith("ERROR:") else res
         
     youtube_transcript = ""
     if youtube_url:
-        youtube_transcript = extract_transcript_from_youtube(youtube_url)
+        res = extract_transcript_from_youtube(youtube_url)
+        youtube_transcript = "" if res.startswith("ERROR:") else res
         
     website_text = ""
     if website_url:
-        website_text = extract_text_from_url(website_url)
+        res = extract_text_from_url(website_url)
+        website_text = "" if res.startswith("ERROR:") else res
         
     # If topic is not provided, AI will infer it from the context
     inferred_topic = topic if topic else "Infer the topic from the provided context."

@@ -5,7 +5,10 @@ from langchain_core.prompts import ChatPromptTemplate
 from app.config import settings
 
 def context_extractor_node(state: GraphState) -> dict:
-    """Parses inputs and merges them into a single context string."""
+    """
+    Step 1: Parses inputs and merges them into a single context string.
+    This aggregates everything the AI needs to know into one massive string.
+    """
     parts = []
     if state.get("topic"):
         parts.append(f"Topic: {state['topic']}")
@@ -21,7 +24,10 @@ def context_extractor_node(state: GraphState) -> dict:
     return {"extracted_context": "\n\n".join(parts)}
 
 def context_optimizer_node(state: GraphState) -> dict:
-    """Enforces token limits by truncating context if necessary."""
+    """
+    Step 2: Enforces token limits by truncating context if necessary.
+    Prevents 400 Payload Too Large errors from Groq/Llama 3.
+    """
     context = state.get("extracted_context", "")
     max_chars = 30000
     if len(context) > max_chars:

@@ -3,6 +3,10 @@ from app.graph.state import GraphState
 from app.graph.nodes import context_extractor_node, context_optimizer_node, single_generation_node
 
 def build_workflow():
+    """
+    Constructs the LangGraph state machine.
+    Data flows linearly: Extract Context -> Optimize Size -> Generate Output.
+    """
     workflow = StateGraph(GraphState)
     
     workflow.add_node("context_extractor", context_extractor_node)
