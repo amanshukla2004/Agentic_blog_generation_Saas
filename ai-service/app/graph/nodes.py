@@ -13,6 +13,8 @@ def context_extractor_node(state: GraphState) -> dict:
         parts.append(f"Raw Text Input: {state['raw_text']}")
     if state.get("pdf_text"):
         parts.append(f"PDF Content: {state['pdf_text']}")
+    if state.get("website_text"):
+        parts.append(f"Website Content: {state['website_text']}")
     if state.get("youtube_transcript"):
         parts.append(f"YouTube Transcript: {state['youtube_transcript']}")
         

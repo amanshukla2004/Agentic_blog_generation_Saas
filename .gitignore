@@ -54,6 +54,8 @@ dist/
 
 # Unnecessary Context and Prompt Files
 folder_structure.txt
+backend_requirements.md
+frontend_requirements.md
 ai-service/agent_context.md
 ai-service/ai_prompt.txt
 ai-service/system_prompt.txt

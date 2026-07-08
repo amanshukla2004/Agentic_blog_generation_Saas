@@ -5,6 +5,7 @@ class GraphState(TypedDict):
     youtube_transcript: Optional[str]
     raw_text: Optional[str]
     pdf_text: Optional[str]
+    website_text: Optional[str]
     
     extracted_context: str
     optimized_context: str

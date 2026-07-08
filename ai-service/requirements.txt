@@ -7,3 +7,5 @@ langgraph
 langchain-groq
 pypdf
 youtube-transcript-api
+beautifulsoup4
+requests
