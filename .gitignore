@@ -45,6 +45,13 @@ target/
 .idea/
 *.iml
 .vscode/
+HELP.md
+.mvn/wrapper/maven-wrapper.jar
+.apt_generated
+.factorypath
+.springBeans
+.sts4-cache
+application.yml
 
 # Node / Frontend
 node_modules/
