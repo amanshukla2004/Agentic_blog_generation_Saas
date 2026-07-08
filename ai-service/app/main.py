@@ -33,6 +33,7 @@ async def generate_multimodal(
     website_url: Optional[str] = Form(None),
     youtube_url: Optional[str] = Form(None),
     raw_text: Optional[str] = Form(None),
+    system_prompt: str = Form(...),
     pdf_file: Optional[UploadFile] = File(None),
     secret: str = Depends(verify_internal_secret)
 ):
@@ -61,7 +62,8 @@ async def generate_multimodal(
         "youtube_transcript": youtube_transcript,
         "raw_text": raw_text,
         "pdf_text": pdf_text,
-        "website_text": website_text
+        "website_text": website_text,
+        "system_prompt": system_prompt
     }
     
     result = graph.invoke(initial_state)

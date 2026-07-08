@@ -64,3 +64,8 @@ ai-service/mistakes2.log
 
 gateway-service/gate-way_prompt.txt
 gateway-service/gateway_context.md
+
+# Prompts
+prompts/
+
+.agents*

@@ -7,6 +7,7 @@ class GraphState(TypedDict, total=False):
     raw_text: Optional[str]
     pdf_text: Optional[str]
     website_text: Optional[str]
+    system_prompt: str
     
     # --- Generated Pipeline State ---
     extracted_context: Optional[str]  # Combined raw text from all sources
