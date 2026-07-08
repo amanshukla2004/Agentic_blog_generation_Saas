@@ -1,0 +1,61 @@
+# General
+.DS_Store
+.env
+*.log
+
+# Python (ai-service)
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+.venv/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Java / Spring Boot (gateway-service)
+target/
+*.class
+*.jar
+*.war
+*.nar
+*.ear
+.settings/
+.classpath
+.project
+.idea/
+*.iml
+.vscode/
+
+# Node / Frontend
+node_modules/
+dist/
+.npm
+.yarn
+
+# Unnecessary Context and Prompt Files
+folder_structure.txt
+ai-service/agent_context.md
+ai-service/ai_prompt.txt
+ai-service/system_prompt.txt
+ai-service/mistakes.log
+ai-service/mistakes2.log
