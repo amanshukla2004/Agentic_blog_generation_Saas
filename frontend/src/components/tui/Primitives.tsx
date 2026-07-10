@@ -96,9 +96,16 @@ export const StatusBadge = ({ status, children, className = '' }: any) => {
 
 // ROLE BADGE
 export const RoleBadge = ({ role, className = '' }: any) => {
-  const isMaster = role === 'MASTER_ADMIN';
-  const colorClass = isMaster ? 'text-role-master' : 'text-warning';
-  const displayRole = isMaster ? 'MASTER' : 'ADMIN';
+  let displayRole = 'USER';
+  let colorClass = 'text-secondary';
+  
+  if (role === 'MASTER_ADMIN') {
+    displayRole = 'MASTER ADMIN';
+    colorClass = 'text-role-master';
+  } else if (role === 'ADMIN') {
+    displayRole = 'AUTHOR';
+    colorClass = 'text-warning';
+  }
   
   return (
     <span className={`inline-flex items-center px-2 py-0.5 text-xs border border-border uppercase tracking-widest ${colorClass} ${className}`}>

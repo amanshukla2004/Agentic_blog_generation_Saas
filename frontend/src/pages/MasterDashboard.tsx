@@ -106,13 +106,15 @@ export const MasterDashboard: React.FC = () => {
       <td className="px-4 py-3 flex gap-2 flex-wrap">
         <Button variant="ghost" onClick={() => handleResetQuota(user.id)} className="text-[10px] px-2 py-1 h-auto">Reset</Button>
         {user.role !== 'MASTER_ADMIN' && (
-          <Button variant="accent" onClick={() => handleToggleAdmin(user.id)} className="text-[10px] px-2 py-1 h-auto">
-            {user.role === 'ADMIN' ? 'Demote' : 'Make Admin'}
-          </Button>
+          <>
+            <Button variant="accent" onClick={() => handleToggleAdmin(user.id)} className="text-[10px] px-2 py-1 h-auto">
+              {user.role === 'ADMIN' ? 'Make User' : 'Make Author'}
+            </Button>
+            <Button variant="danger" onClick={() => handleToggleActive(user.id)} className="text-[10px] px-2 py-1 h-auto">
+              {user.isActive ? 'Ban' : 'Unban'}
+            </Button>
+          </>
         )}
-        <Button variant="danger" onClick={() => handleToggleActive(user.id)} className="text-[10px] px-2 py-1 h-auto">
-          {user.isActive ? 'Ban' : 'Unban'}
-        </Button>
       </td>
     </>
   );
