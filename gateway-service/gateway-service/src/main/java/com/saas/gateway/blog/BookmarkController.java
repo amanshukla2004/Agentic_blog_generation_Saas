@@ -36,6 +36,11 @@ public class BookmarkController {
         User user = userRepository.findById(userId).orElseThrow();
         BlogDraft blog = blogRepository.findById(blogId).orElseThrow();
 
+        // Prevent IDOR: Ensure the blog is either published or belongs to the current user
+        if (blog.getStatus() != Status.PUBLISHED && !blog.getUser().getId().equals(userId)) {
+            return ResponseEntity.status(403).build();
+        }
+
         if (bookmarkRepository.findByUserIdAndBlogId(user.getId(), blog.getId()).isEmpty()) {
             Bookmark bookmark = new Bookmark(user, blog);
             bookmarkRepository.save(bookmark);
