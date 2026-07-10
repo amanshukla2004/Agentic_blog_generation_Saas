@@ -127,7 +127,7 @@ public class MasterAdminController {
     @PreAuthorize("hasRole('MASTER_ADMIN')")
     public ResponseEntity<SystemSetting> updateSetting(@PathVariable String key, @RequestBody Map<String, String> body) {
         String newValue = body.get("settingValue");
-        if (newValue == null || newValue.isBlank()) {
+        if (newValue == null) {
             return ResponseEntity.badRequest().build();
         }
 

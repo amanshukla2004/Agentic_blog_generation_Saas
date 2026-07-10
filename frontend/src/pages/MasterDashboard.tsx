@@ -387,6 +387,10 @@ export const MasterDashboard: React.FC = () => {
                 <div className="flex gap-4 items-end">
                   <div className="flex-1">
                     <Field label="Maintenance Mode (true/false)">
+                      <p className="text-secondary text-[10px] mb-2 leading-relaxed">
+                        <strong>true:</strong> Locks the AI generator, hides the form, and displays a maintenance banner to all users. Users can still view existing blogs.<br/>
+                        <strong>false:</strong> Normal operation.
+                      </p>
                       <Input 
                         type="text" 
                         value={maintenanceMode} 
