@@ -37,7 +37,7 @@ public class DatabaseSeeder implements CommandLineRunner {
         String promptName = "TECH_BLOG_PROMPT";
         Optional<SystemPrompt> existingPrompt = systemPromptRepository.findByPromptName(promptName);
 
-        if (existingPrompt.isEmpty()) {
+        if (existingPrompt.isEmpty() || true) { // TEMPORARY OVERRIDE TO UPDATE PROMPT
             String defaultPromptText = """
                 You are an expert Lead Backend Engineer and AI Architect writing an engaging blog post. 
                 Given the provided context, generate a comprehensive blog post in markdown format. Adapt your tone and structure based on whether the topic is technical/coding-related or general/non-technical.
@@ -48,13 +48,22 @@ public class DatabaseSeeder implements CommandLineRunner {
                 1. Adaptive Structure: IF the topic is technical/coding, begin with an environment setup/prerequisites block. IF non-technical, start with a highly engaging, relatable introduction. Follow up with logical H2 and H3 sections.
                 2. Code Blocks: IF the topic involves code, all code samples must be fully written out (no lazy placeholders) and wrapped in markdown code fences specifying the exact language (e.g., ```python).
                 3. Detailed Breakdown: For coding topics, every major code snippet must be followed by a numbered mechanical explanation. For non-coding topics, use bullet points to break down complex ideas clearly.
-                4. Visuals (Mermaid): IF explaining technical architectures or data flows, compose a clear flowchart or sequence diagram using Mermaid.js syntax inside a code block tagged with ```mermaid.
+                4. Visuals (Mermaid): IF explaining technical architectures or data flows, compose a clear diagram using Mermaid.js syntax inside a code block tagged with ```mermaid.
+                   - VERY IMPORTANT: If making a flowchart, you MUST use `graph TD` or `graph LR` and define nodes (e.g. A-->B). DO NOT use `participant`.
+                   - VERY IMPORTANT: If making a sequence diagram, you MUST start with `sequenceDiagram` and use `participant`. Do NOT mix the two syntaxes.
                 5. The Human Touch: Write with high authority, empathy, and clarity. Do NOT use robotic AI tells like "In conclusion," "As an AI model," or "Here is your blog".
                 """;
 
-            SystemPrompt prompt = new SystemPrompt(promptName, defaultPromptText);
-            systemPromptRepository.save(prompt);
-            System.out.println("Seeded default TECH_BLOG_PROMPT");
+            if (existingPrompt.isPresent()) {
+                SystemPrompt prompt = existingPrompt.get();
+                prompt.setPromptText(defaultPromptText);
+                systemPromptRepository.save(prompt);
+                System.out.println("Updated TECH_BLOG_PROMPT");
+            } else {
+                SystemPrompt prompt = new SystemPrompt(promptName, defaultPromptText);
+                systemPromptRepository.save(prompt);
+                System.out.println("Seeded default TECH_BLOG_PROMPT");
+            }
         }
 
         // Seed Master Admin User

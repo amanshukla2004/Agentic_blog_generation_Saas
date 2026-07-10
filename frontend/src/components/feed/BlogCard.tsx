@@ -15,6 +15,7 @@ export interface BlogCardProps {
   date: string;
   initialBookmarked?: boolean;
   isStaffPick?: boolean;
+  coverImage?: string | null;
 }
 
 export const BlogCard: React.FC<BlogCardProps> = ({
@@ -28,7 +29,8 @@ export const BlogCard: React.FC<BlogCardProps> = ({
   author,
   date,
   initialBookmarked = false,
-  isStaffPick = false
+  isStaffPick = false,
+  coverImage = null
 }) => {
   const [saved, setSaved] = useState(initialBookmarked);
   const [staffPickStatus, setStaffPickStatus] = useState(isStaffPick);
@@ -81,6 +83,11 @@ export const BlogCard: React.FC<BlogCardProps> = ({
       </div>
 
       <Link to={`/blog/${slug}`} className="block group-hover:text-accent transition-colors">
+        {coverImage && (
+          <div className="mb-4 w-full h-48 border border-border overflow-hidden bg-surface relative group-hover:border-accent transition-colors">
+            <img src={coverImage} alt={title} className="w-full h-full object-cover grayscale opacity-80 group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-300" />
+          </div>
+        )}
         <h2 className="text-base font-bold text-fg mb-2 leading-tight flex items-center gap-2">
           {title}
           {staffPickStatus && !isMasterAdmin && <span className="text-[10px] bg-accent text-bg px-1 rounded-sm uppercase tracking-widest ml-2">Staff Pick</span>}

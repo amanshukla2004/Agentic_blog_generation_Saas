@@ -5,7 +5,7 @@ import type { BlogDraft } from './blogApi';
 export const adminApi = createApi({
   reducerPath: 'adminApi',
   baseQuery,
-  tagTypes: ['AdminBlog'],
+  tagTypes: ['AdminBlog', 'UserBlog', 'PublicBlog'],
   endpoints: (builder) => ({
     getAllBlogs: builder.query<BlogDraft[], void>({
       query: () => '/admin/blogs',
@@ -24,7 +24,7 @@ export const adminApi = createApi({
         method: 'PUT',
         body,
       }),
-      invalidatesTags: ['AdminBlog'],
+      invalidatesTags: ['AdminBlog', 'UserBlog', 'PublicBlog'],
     }),
   }),
 });

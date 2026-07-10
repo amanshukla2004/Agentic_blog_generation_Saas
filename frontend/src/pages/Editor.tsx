@@ -11,6 +11,106 @@ import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { Mermaid } from '../components/ui/Mermaid';
 
+const ReviseModal = ({ isOpen, onClose, onRevise, isRevising }: any) => {
+  const [instruction, setInstruction] = useState('');
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 bg-bg/90 flex items-center justify-center z-50 p-4">
+      <Panel title="Revise with AI" className="max-w-md w-full">
+        <p className="text-secondary text-xs uppercase tracking-widest mb-6">Tell the AI how to rewrite this blog.</p>
+        <Field label="Instructions">
+          <textarea
+            className="tui-input min-h-[100px] resize-none"
+            placeholder="e.g. Make the tone more professional and add a conclusion section."
+            value={instruction}
+            onChange={(e) => setInstruction(e.target.value)}
+            disabled={isRevising}
+          />
+        </Field>
+        <div className="flex justify-end gap-3 pt-4 border-t border-border mt-4">
+          <Button variant="ghost" onClick={onClose} disabled={isRevising}>Cancel</Button>
+          <Button variant="accent" onClick={() => onRevise(instruction)} disabled={!instruction.trim() || isRevising}>
+            {isRevising ? 'Revising...' : 'Submit'}
+          </Button>
+        </div>
+      </Panel>
+    </div>
+  );
+};
+
+const PublishModal = ({ isOpen, onClose, onPublish, initialSeoDesc, initialKeywords, initialCategory }: any) => {
+  const [seoDescInput, setSeoDescInput] = useState('');
+  const [seoKeywordsInput, setSeoKeywordsInput] = useState('');
+  const [categoryInput, setCategoryInput] = useState('');
+
+  useEffect(() => {
+    if (isOpen) {
+      setSeoDescInput(initialSeoDesc || '');
+      setSeoKeywordsInput(initialKeywords || '');
+      setCategoryInput(initialCategory || 'Technology');
+    }
+  }, [isOpen, initialSeoDesc, initialKeywords, initialCategory]);
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 bg-bg/90 flex items-center justify-center z-50 p-4">
+      <Panel title="Publish Article" className="max-w-md w-full">
+        <p className="text-secondary text-xs uppercase tracking-widest mb-6">Review metadata before going live.</p>
+        <Field label="SEO Description">
+          <textarea
+            className="tui-input min-h-[80px] resize-none"
+            placeholder="e.g. Learn how AI is revolutionizing..."
+            value={seoDescInput}
+            onChange={(e) => setSeoDescInput(e.target.value)}
+          />
+        </Field>
+        <Field label="SEO Keywords (Comma separated)">
+          <Input
+            placeholder="e.g. AI, Fast Food, 2026"
+            value={seoKeywordsInput}
+            onChange={(e: any) => setSeoKeywordsInput(e.target.value)}
+          />
+        </Field>
+        <Field label="Category">
+          <select className="tui-input cursor-pointer" value={categoryInput} onChange={(e) => setCategoryInput(e.target.value)}>
+            <option value="Technology">Technology</option>
+            <option value="Food blogs">Food blogs</option>
+            <option value="Travel blogs">Travel blogs</option>
+            <option value="Health and fitness blogs">Health and fitness blogs</option>
+            <option value="Lifestyle blogs">Lifestyle blogs</option>
+            <option value="Fashion and beauty blogs">Fashion and beauty blogs</option>
+            <option value="Photography blogs">Photography blogs</option>
+            <option value="Personal blogs">Personal blogs</option>
+            <option value="DIY craft blogs">DIY craft blogs</option>
+            <option value="Parenting blogs">Parenting blogs</option>
+            <option value="Music blogs">Music blogs</option>
+            <option value="Business blogs">Business blogs</option>
+            <option value="Art and design blogs">Art and design blogs</option>
+            <option value="Book and writing blogs">Book and writing blogs</option>
+            <option value="Personal finance blogs">Personal finance blogs</option>
+            <option value="Interior design blogs">Interior design blogs</option>
+            <option value="Sports blogs">Sports blogs</option>
+            <option value="News blogs">News blogs</option>
+            <option value="Movie blogs">Movie blogs</option>
+            <option value="Religion blogs">Religion blogs</option>
+            <option value="Political blogs">Political blogs</option>
+            <option value="AI">AI</option>
+            <option value="Engineering">Engineering</option>
+          </select>
+        </Field>
+        <div className="flex justify-end gap-3 pt-4 border-t border-border mt-4">
+          <Button variant="ghost" onClick={onClose}>Cancel</Button>
+          <Button variant="accent" onClick={() => onPublish(seoDescInput, seoKeywordsInput, categoryInput)} disabled={!seoDescInput.trim() || !categoryInput.trim()}>Confirm Publish</Button>
+        </div>
+      </Panel>
+    </div>
+  );
+};
+
+
 export const Editor = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -30,12 +130,8 @@ export const Editor = () => {
   const [title, setTitle] = useState('');
   
   const [showSeoModal, setShowSeoModal] = useState(false);
-  const [seoDescInput, setSeoDescInput] = useState('');
-  const [seoKeywordsInput, setSeoKeywordsInput] = useState('');
-  const [categoryInput, setCategoryInput] = useState('');
 
   const [showReviseModal, setShowReviseModal] = useState(false);
-  const [reviseInstruction, setReviseInstruction] = useState('');
   const [revising, setRevising] = useState(false);
 
   useEffect(() => {
@@ -65,15 +161,13 @@ export const Editor = () => {
     URL.revokeObjectURL(url);
   };
 
-  const handleRevise = async () => {
-    if (!reviseInstruction.trim()) return;
+  const handleRevise = async (instruction: string) => {
     setRevising(true);
     try {
       await updateBlog({ id: draft.id, rawMarkdown: content, title }).unwrap();
-      const res = await reviseBlog({ id: draft.id, instruction: reviseInstruction }).unwrap();
+      const res = await reviseBlog({ id: draft.id, instruction }).unwrap();
       setContent(res.rawMarkdown);
       setShowReviseModal(false);
-      setReviseInstruction('');
     } catch (e) {
       alert("Revision failed.");
     } finally {
@@ -83,23 +177,20 @@ export const Editor = () => {
 
   const handlePublishClick = () => {
     if (!isAdmin) return;
-    setSeoDescInput(draft.seoDescription || '');
-    setSeoKeywordsInput(draft.seoKeywords || '');
-    setCategoryInput(draft.category || 'Technology');
     setShowSeoModal(true);
   };
 
-  const confirmPublish = async () => {
-    if (!isAdmin || !seoDescInput.trim() || !categoryInput.trim()) return;
+  const confirmPublish = async (desc: string, keywords: string, cat: string) => {
+    if (!isAdmin || !desc.trim() || !cat.trim()) return;
     await updateBlog({ id: draft.id, rawMarkdown: content, title }).unwrap();
-    await publishBlog({ id: draft.id, seoDescription: seoDescInput, seoKeywords: seoKeywordsInput, category: categoryInput });
+    await publishBlog({ id: draft.id, seoDescription: desc, seoKeywords: keywords, category: cat });
     setShowSeoModal(false);
     alert('Blog published!');
     navigate('/dashboard');
   };
 
   return (
-    <div className="flex flex-col gap-6 w-full max-w-[95%] mx-auto h-[calc(100vh-120px)] px-4 font-mono text-sm [--tw-accent:theme(colors.warning)] py-6">
+    <div className="flex flex-col gap-6 w-full max-w-[95%] mx-auto h-[calc(100vh-64px)] px-4 font-mono text-sm [--tw-accent:theme(colors.warning)] py-4">
       <div className="flex justify-between items-center mb-2">
         <Button variant="ghost" onClick={() => navigate(-1)} icon="←">Back</Button>
         <div className="flex gap-3">
@@ -128,7 +219,7 @@ export const Editor = () => {
       </div>
       
       <div className="flex-1 min-h-0 grid grid-cols-1 lg:grid-cols-2 gap-6 pb-6">
-        <div className="relative border border-border bg-surface h-full flex flex-col mt-4 min-h-0 overflow-hidden">
+        <div className="relative border border-border bg-surface h-full flex flex-col mt-4 min-h-0">
           <span className="absolute -top-2.5 left-4 bg-bg px-2 text-fg font-bold">Markdown Editor</span>
           <textarea
             value={content}
@@ -138,7 +229,7 @@ export const Editor = () => {
           />
         </div>
         
-        <div className="relative border border-border bg-surface h-full flex flex-col mt-4 min-h-0 overflow-hidden">
+        <div className="relative border border-border bg-surface h-full flex flex-col mt-4 min-h-0">
           <span className="absolute -top-2.5 left-4 bg-bg px-2 text-fg font-bold">Live Preview</span>
           <div className="flex-1 min-h-0 w-full p-6 overflow-y-auto prose prose-sm prose-invert prose-slate prose-headings:font-bold prose-headings:text-fg prose-a:text-accent prose-p:text-fg prose-img:max-w-full max-w-none">
             <ReactMarkdown
@@ -175,82 +266,21 @@ export const Editor = () => {
         </div>
       </div>
 
-      {showSeoModal && (
-        <div className="fixed inset-0 bg-bg/90 flex items-center justify-center z-50 p-4">
-          <Panel title="Publish Article" className="max-w-md w-full">
-            <p className="text-secondary text-xs uppercase tracking-widest mb-6">Review metadata before going live.</p>
-            <Field label="SEO Description">
-              <textarea
-                className="tui-input min-h-[80px] resize-none"
-                placeholder="e.g. Learn how AI is revolutionizing..."
-                value={seoDescInput}
-                onChange={(e) => setSeoDescInput(e.target.value)}
-              />
-            </Field>
-            <Field label="SEO Keywords (Comma separated)">
-              <Input
-                placeholder="e.g. AI, Fast Food, 2026"
-                value={seoKeywordsInput}
-                onChange={(e: any) => setSeoKeywordsInput(e.target.value)}
-              />
-            </Field>
-            <Field label="Category">
-              <select className="tui-input cursor-pointer" value={categoryInput} onChange={(e) => setCategoryInput(e.target.value)}>
-                <option value="Technology">Technology</option>
-                <option value="Food blogs">Food blogs</option>
-                <option value="Travel blogs">Travel blogs</option>
-                <option value="Health and fitness blogs">Health and fitness blogs</option>
-                <option value="Lifestyle blogs">Lifestyle blogs</option>
-                <option value="Fashion and beauty blogs">Fashion and beauty blogs</option>
-                <option value="Photography blogs">Photography blogs</option>
-                <option value="Personal blogs">Personal blogs</option>
-                <option value="DIY craft blogs">DIY craft blogs</option>
-                <option value="Parenting blogs">Parenting blogs</option>
-                <option value="Music blogs">Music blogs</option>
-                <option value="Business blogs">Business blogs</option>
-                <option value="Art and design blogs">Art and design blogs</option>
-                <option value="Book and writing blogs">Book and writing blogs</option>
-                <option value="Personal finance blogs">Personal finance blogs</option>
-                <option value="Interior design blogs">Interior design blogs</option>
-                <option value="Sports blogs">Sports blogs</option>
-                <option value="News blogs">News blogs</option>
-                <option value="Movie blogs">Movie blogs</option>
-                <option value="Religion blogs">Religion blogs</option>
-                <option value="Political blogs">Political blogs</option>
-                <option value="AI">AI</option>
-                <option value="Engineering">Engineering</option>
-              </select>
-            </Field>
-            <div className="flex justify-end gap-3 pt-4 border-t border-border mt-4">
-              <Button variant="ghost" onClick={() => setShowSeoModal(false)}>Cancel</Button>
-              <Button variant="accent" onClick={confirmPublish} disabled={!seoDescInput.trim() || !categoryInput.trim()}>Confirm Publish</Button>
-            </div>
-          </Panel>
-        </div>
-      )}
+      <PublishModal 
+        isOpen={showSeoModal} 
+        onClose={() => setShowSeoModal(false)} 
+        onPublish={confirmPublish} 
+        initialSeoDesc={draft.seoDescription}
+        initialKeywords={draft.seoKeywords}
+        initialCategory={draft.category}
+      />
 
-      {showReviseModal && (
-        <div className="fixed inset-0 bg-bg/90 flex items-center justify-center z-50 p-4">
-          <Panel title="Revise with AI" className="max-w-md w-full">
-            <p className="text-secondary text-xs uppercase tracking-widest mb-6">Tell the AI how to rewrite this blog.</p>
-            <Field label="Instructions">
-              <textarea
-                className="tui-input min-h-[100px] resize-none"
-                placeholder="e.g. Make the tone more professional and add a conclusion section."
-                value={reviseInstruction}
-                onChange={(e) => setReviseInstruction(e.target.value)}
-                disabled={revising}
-              />
-            </Field>
-            <div className="flex justify-end gap-3 pt-4 border-t border-border mt-4">
-              <Button variant="ghost" onClick={() => setShowReviseModal(false)} disabled={revising}>Cancel</Button>
-              <Button variant="accent" onClick={handleRevise} disabled={!reviseInstruction.trim() || revising}>
-                {revising ? 'Revising...' : 'Submit'}
-              </Button>
-            </div>
-          </Panel>
-        </div>
-      )}
+      <ReviseModal 
+        isOpen={showReviseModal} 
+        onClose={() => setShowReviseModal(false)} 
+        onRevise={handleRevise} 
+        isRevising={revising} 
+      />
     </div>
   );
 };

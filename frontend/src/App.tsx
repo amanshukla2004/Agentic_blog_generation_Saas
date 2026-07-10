@@ -13,6 +13,7 @@ import { Editor } from './pages/Editor';
 import { MasterDashboard } from './pages/MasterDashboard';
 import { AdminDashboard } from './pages/AdminDashboard';
 import { Profile } from './pages/Profile';
+import { AuthorProfile } from './pages/AuthorProfile';
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const isAuthenticated = useSelector((state: RootState) => state.auth.isAuthenticated);
@@ -29,6 +30,7 @@ function App() {
           <Route path="login" element={<Login />} />
           <Route path="register" element={<Register />} />
           <Route path="blog/:slug" element={<BlogViewer />} />
+          <Route path="author/:username" element={<AuthorProfile />} />
           
           {/* Protected Routes */}
           <Route path="onboarding" element={

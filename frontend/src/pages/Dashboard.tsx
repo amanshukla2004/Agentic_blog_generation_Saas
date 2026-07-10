@@ -45,8 +45,17 @@ export const Dashboard = () => {
                 </div>
                 <p className="text-xs text-secondary uppercase tracking-widest mb-4">Topic: {blog.topic}</p>
                 <p className="text-sm text-secondary line-clamp-2">{blog.seoDescription || 'No description generated yet.'}</p>
-                <div className="mt-4 text-[10px] text-muted uppercase tracking-widest">
-                  CREATED: {new Date(blog.createdAt).toLocaleDateString()}
+                <div className="flex justify-between items-end mt-4">
+                  <div className="text-[10px] text-muted uppercase tracking-widest">
+                    {blog.status === 'PUBLISHED' ? 'PUBLISHED: ' : 'CREATED: '} 
+                    {new Date(blog.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                  </div>
+                  {blog.status === 'PUBLISHED' && (
+                    <div className="text-[10px] text-accent uppercase tracking-widest font-bold flex gap-3">
+                      <span>{blog.viewCount || 0} VIEWS</span>
+                      <span>{blog.likesCount || 0} LIKES</span>
+                    </div>
+                  )}
                 </div>
               </div>
               <div className="flex gap-3 mt-auto pt-4 border-t border-border">

@@ -27,9 +27,12 @@ export interface BlogDraft {
   authorEmail: string;
   authorUsername?: string;
   viewCount: number;
+  likesCount?: number;
   tags: string[];
   category?: string;
   seoKeywords?: string;
+  coverImage?: string;
+  isStaffPick?: boolean;
 }
 
 export interface PageResponse<T> {
@@ -81,6 +84,12 @@ export const blogApi = createApi({
     getPlatformStats: builder.query<PlatformStats, void>({
       query: () => '/public/blogs/stats',
       providesTags: ['Blog'],
+    }),
+    getTopAuthors: builder.query<any[], void>({
+      query: () => '/public/authors/top',
+    }),
+    getAuthorProfile: builder.query<any, string>({
+      query: (username) => `/public/authors/${username}`,
     }),
     getBlogBySlug: builder.query<BlogDraft, string>({
       query: (slug) => `/public/blogs/${slug}`,
@@ -147,6 +156,8 @@ export const {
   useGetTopBlogsQuery,
   useGetStaffPicksQuery,
   useGetPlatformStatsQuery,
+  useGetTopAuthorsQuery,
+  useGetAuthorProfileQuery,
   useGetBlogBySlugQuery, 
   useGetUserBlogsQuery,
   useUpdateBlogMutation,

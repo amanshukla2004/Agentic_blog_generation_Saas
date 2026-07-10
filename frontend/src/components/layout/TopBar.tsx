@@ -20,25 +20,27 @@ export const TopBar = () => {
     return 'ring-accent border-accent text-accent';
   };
   
-  const getRoleInitial = () => {
-    if (role?.includes('MASTER_ADMIN')) return 'M';
-    if (role?.includes('ADMIN')) return 'A';
+  const getProfileInitial = () => {
+    const email = useSelector((state: RootState) => state.auth.email) || '';
+    if (email) return email.charAt(0).toUpperCase();
     return 'U';
   };
 
   const links = isAuthenticated ? [
     { label: 'Dashboard', to: '/dashboard' },
     { label: 'Generate', to: '/generate' },
-    { label: 'Profile', to: '/profile' },
     ...(role?.includes('ADMIN') || role?.includes('MASTER_ADMIN') ? [{ label: 'Admin', to: '/admin-dashboard' }] : []),
     ...(role?.includes('MASTER_ADMIN') ? [{ label: 'Master', to: '/master-dashboard' }] : []),
   ] : [];
 
   const rightElement = isAuthenticated ? (
     <div className="flex items-center gap-4">
-      <span className={`w-8 h-8 rounded-full border ring-1 ${getRoleRingColor()} flex items-center justify-center text-xs bg-surface uppercase`}>
-        {getRoleInitial()}
-      </span>
+      <div 
+        onClick={() => navigate('/profile')}
+        className={`w-8 h-8 rounded-full border ring-1 ${getRoleRingColor()} flex items-center justify-center text-xs bg-surface uppercase cursor-pointer hover:bg-bg transition-colors`}
+      >
+        {getProfileInitial()}
+      </div>
       <Button variant="ghost" onClick={handleLogout}>Log Out</Button>
     </div>
   ) : (

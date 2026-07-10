@@ -37,8 +37,16 @@ public class PublicBlogController {
             java.util.List<String> tags,
             Integer likesCount,
             Long viewCount,
-            Boolean isStaffPick
+            Boolean isStaffPick,
+            String coverImage
     ) {}
+
+    private String extractCoverImage(String markdown) {
+        if (markdown == null) return null;
+        java.util.regex.Matcher m = java.util.regex.Pattern.compile("!\\[.*?\\]\\((.*?)\\)").matcher(markdown);
+        if (m.find()) return m.group(1);
+        return null;
+    }
 
     @GetMapping
     @Transactional(readOnly = true)
@@ -69,7 +77,8 @@ public class PublicBlogController {
                 blog.getTags(),
                 blog.getLikesCount(),
                 blog.getViewCount(),
-                blog.getIsStaffPick()
+                blog.getIsStaffPick(),
+                extractCoverImage(blog.getRawMarkdown())
         ));
         
         return ResponseEntity.ok(summaryPage);
@@ -104,7 +113,8 @@ public class PublicBlogController {
                 blog.getTags(),
                 blog.getLikesCount(),
                 blog.getViewCount(),
-                blog.getIsStaffPick()
+                blog.getIsStaffPick(),
+                extractCoverImage(blog.getRawMarkdown())
         ));
         
         return ResponseEntity.ok(summaryPage);
@@ -139,7 +149,8 @@ public class PublicBlogController {
                 blog.getTags(),
                 blog.getLikesCount(),
                 blog.getViewCount(),
-                blog.getIsStaffPick()
+                blog.getIsStaffPick(),
+                extractCoverImage(blog.getRawMarkdown())
         ));
         
         return ResponseEntity.ok(summaryPage);
@@ -167,7 +178,8 @@ public class PublicBlogController {
                 blog.getTags(),
                 blog.getLikesCount(),
                 blog.getViewCount(),
-                blog.getIsStaffPick()
+                blog.getIsStaffPick(),
+                extractCoverImage(blog.getRawMarkdown())
         ));
         
         return ResponseEntity.ok(summaryPage);

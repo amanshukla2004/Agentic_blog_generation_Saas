@@ -20,8 +20,16 @@ public record BlogResponseDTO(
         java.util.List<String> tags,
         Integer likesCount,
         Long viewCount,
-        Boolean isStaffPick
+        Boolean isStaffPick,
+        String coverImage
 ) {
+    public static String extractCoverImage(String markdown) {
+        if (markdown == null) return null;
+        java.util.regex.Matcher m = java.util.regex.Pattern.compile("!\\[.*?\\]\\((.*?)\\)").matcher(markdown);
+        if (m.find()) return m.group(1);
+        return null;
+    }
+
     public static BlogResponseDTO fromEntity(BlogDraft blog) {
         return new BlogResponseDTO(
                 blog.getId(),
@@ -40,7 +48,8 @@ public record BlogResponseDTO(
                 blog.getTags(),
                 blog.getLikesCount(),
                 blog.getViewCount(),
-                blog.getIsStaffPick()
+                blog.getIsStaffPick(),
+                extractCoverImage(blog.getRawMarkdown())
         );
     }
 }

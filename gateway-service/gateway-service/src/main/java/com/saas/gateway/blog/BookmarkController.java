@@ -78,7 +78,8 @@ public class BookmarkController {
                 blog.getTags(),
                 blog.getLikesCount(),
                 blog.getViewCount(),
-                blog.getIsStaffPick()
+                blog.getIsStaffPick(),
+                BlogResponseDTO.extractCoverImage(blog.getRawMarkdown())
             );
         });
         
