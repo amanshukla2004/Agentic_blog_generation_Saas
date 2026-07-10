@@ -6,9 +6,16 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import com.saas.gateway.blog.BlogRepository;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.web.client.RestTemplate;
 
 @RestController
 @RequestMapping("/api/v1/master")
@@ -18,15 +25,24 @@ public class MasterAdminController {
     private final SystemErrorLogRepository systemErrorLogRepository;
     private final SystemPromptRepository systemPromptRepository;
     private final SystemSettingRepository systemSettingRepository;
+    private final BlogRepository blogRepository;
+
+    @Value("${ai-service.base-url}")
+    private String aiServiceBaseUrl;
+
+    @Value("${app.security.internal-secret}")
+    private String internalSecret;
 
     public MasterAdminController(UserRepository userRepository, 
                                  SystemErrorLogRepository systemErrorLogRepository,
                                  SystemPromptRepository systemPromptRepository,
-                                 SystemSettingRepository systemSettingRepository) {
+                                 SystemSettingRepository systemSettingRepository,
+                                 BlogRepository blogRepository) {
         this.userRepository = userRepository;
         this.systemErrorLogRepository = systemErrorLogRepository;
         this.systemPromptRepository = systemPromptRepository;
         this.systemSettingRepository = systemSettingRepository;
+        this.blogRepository = blogRepository;
     }
 
     @GetMapping("/users")
@@ -122,5 +138,45 @@ public class MasterAdminController {
             SystemSetting newSetting = new SystemSetting(key, newValue);
             return ResponseEntity.ok(systemSettingRepository.save(newSetting));
         });
+    }
+
+    @GetMapping("/stats")
+    @PreAuthorize("hasRole('MASTER_ADMIN')")
+    public ResponseEntity<Map<String, Object>> getSystemStats() {
+        Map<String, Object> stats = new HashMap<>();
+        stats.put("totalUsers", userRepository.count());
+        stats.put("totalBlogs", blogRepository.count());
+        
+        long totalGenerations = userRepository.findAll().stream()
+                .mapToLong(User::getGenerationsCount)
+                .sum();
+        stats.put("totalGenerations", totalGenerations);
+        
+        return ResponseEntity.ok(stats);
+    }
+
+    @GetMapping("/ai-health")
+    @PreAuthorize("hasRole('MASTER_ADMIN')")
+    public ResponseEntity<Map<String, Object>> getAiHealth() {
+        RestTemplate restTemplate = new RestTemplate();
+        try {
+            HttpHeaders headers = new HttpHeaders();
+            headers.set("X-Internal-Secret", internalSecret);
+            HttpEntity<String> entity = new HttpEntity<>("parameters", headers);
+            
+            ResponseEntity<Map> response = restTemplate.exchange(
+                aiServiceBaseUrl + "/health", 
+                HttpMethod.GET, 
+                entity, 
+                Map.class
+            );
+            return ResponseEntity.ok(response.getBody());
+        } catch (Exception e) {
+            Map<String, Object> error = new HashMap<>();
+            error.put("status", "error");
+            error.put("service", "ai-worker");
+            error.put("message", e.getMessage());
+            return ResponseEntity.status(502).body(error);
+        }
     }
 }

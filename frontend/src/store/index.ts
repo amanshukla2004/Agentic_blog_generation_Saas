@@ -5,6 +5,7 @@ import { generationApi } from './api/generationApi';
 import { masterApi } from './api/masterApi';
 import { adminApi } from './api/adminApi';
 import { userApi } from './api/userApi';
+import { publicApi } from './api/publicApi';
 import authReducer from './slices/authSlice';
 
 export const store = configureStore({
@@ -16,6 +17,7 @@ export const store = configureStore({
     [masterApi.reducerPath]: masterApi.reducer,
     [adminApi.reducerPath]: adminApi.reducer,
     [userApi.reducerPath]: userApi.reducer,
+    [publicApi.reducerPath]: publicApi.reducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware().concat(
@@ -24,7 +26,8 @@ export const store = configureStore({
       generationApi.middleware,
       masterApi.middleware,
       adminApi.middleware,
-      userApi.middleware
+      userApi.middleware,
+      publicApi.middleware
     ),
 });
 

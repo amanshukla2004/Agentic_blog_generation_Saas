@@ -13,15 +13,17 @@ import {
   useToggleStaffPickMutation,
   useDeleteBlogMutation,
   useGetSystemSettingsQuery,
-  useUpdateSettingMutation
+  useUpdateSettingMutation,
+  useGetSystemStatsQuery,
+  useGetAiHealthQuery
 } from '../store/api/masterApi';
 import { Button, Table, Tabs, RoleBadge, Progress, StatusBadge, Input, Field } from '../components/tui/Primitives';
 
-type Tab = 'USERS' | 'AUTHORS' | 'BLOGS' | 'LOGS' | 'PROMPTS' | 'SETTINGS';
+type Tab = 'OVERVIEW' | 'USERS' | 'AUTHORS' | 'BLOGS' | 'LOGS' | 'PROMPTS' | 'SETTINGS';
 
 export const MasterDashboard: React.FC = () => {
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState<Tab>('USERS');
+  const [activeTab, setActiveTab] = useState<Tab>('OVERVIEW');
 
   const { data: users, isLoading: usersLoading, refetch: refetchUsers } = useGetUsersQuery();
   const { data: logs, isLoading: logsLoading } = useGetSystemErrorsQuery();
@@ -43,6 +45,11 @@ export const MasterDashboard: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [userLimit, setUserLimit] = useState('');
   const [adminLimit, setAdminLimit] = useState('');
+  const [maintenanceMode, setMaintenanceMode] = useState('false');
+  const [systemAnnouncement, setSystemAnnouncement] = useState('');
+
+  const { data: stats, isLoading: statsLoading } = useGetSystemStatsQuery();
+  const { data: aiHealth, isLoading: aiHealthLoading } = useGetAiHealthQuery();
   
   React.useEffect(() => {
     if (prompts && prompts.length > 0) {
@@ -54,8 +61,12 @@ export const MasterDashboard: React.FC = () => {
     if (settings) {
       const userL = settings.find(s => s.settingKey === 'USER_GENERATION_LIMIT')?.settingValue;
       const adminL = settings.find(s => s.settingKey === 'ADMIN_GENERATION_LIMIT')?.settingValue;
+      const mm = settings.find(s => s.settingKey === 'MAINTENANCE_MODE')?.settingValue;
+      const sa = settings.find(s => s.settingKey === 'SYSTEM_ANNOUNCEMENT_TEXT')?.settingValue;
       if (userL) setUserLimit(userL);
       if (adminL) setAdminLimit(adminL);
+      if (mm) setMaintenanceMode(mm);
+      if (sa) setSystemAnnouncement(sa);
     }
   }, [settings]);
 
@@ -93,7 +104,7 @@ export const MasterDashboard: React.FC = () => {
       return;
     }
     await updateSetting({ key, settingValue: value });
-    alert(`${key} updated successfully to ${value}`);
+    alert(`${key} updated successfully`);
   };
 
   const userColumns = ["Email", "Role", "Generations", "Status", "Actions"];
@@ -206,12 +217,43 @@ export const MasterDashboard: React.FC = () => {
       </div>
 
       <Tabs 
-        tabs={['USERS', 'AUTHORS', 'BLOGS', 'LOGS', 'PROMPTS', 'SETTINGS']} 
+        tabs={['OVERVIEW', 'USERS', 'AUTHORS', 'BLOGS', 'LOGS', 'PROMPTS', 'SETTINGS']} 
         activeTab={activeTab} 
         onTabChange={(tab: Tab) => setActiveTab(tab)} 
       />
 
       <div>
+        {activeTab === 'OVERVIEW' && (
+          <div className="w-full">
+            {statsLoading || aiHealthLoading ? (
+              <p className="text-secondary uppercase tracking-widest text-xs">Loading overview data...</p>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                <div className="bg-surface border border-border p-6 flex flex-col justify-between">
+                  <h3 className="text-xs uppercase tracking-widest text-secondary mb-2">Total Users</h3>
+                  <span className="text-3xl font-bold text-fg">{stats?.totalUsers || 0}</span>
+                </div>
+                <div className="bg-surface border border-border p-6 flex flex-col justify-between">
+                  <h3 className="text-xs uppercase tracking-widest text-secondary mb-2">Total Blogs</h3>
+                  <span className="text-3xl font-bold text-fg">{stats?.totalBlogs || 0}</span>
+                </div>
+                <div className="bg-surface border border-border p-6 flex flex-col justify-between">
+                  <h3 className="text-xs uppercase tracking-widest text-secondary mb-2">Total Generations</h3>
+                  <span className="text-3xl font-bold text-fg">{stats?.totalGenerations || 0}</span>
+                </div>
+                <div className="bg-surface border border-border p-6 flex flex-col justify-between">
+                  <h3 className="text-xs uppercase tracking-widest text-secondary mb-2">AI Service Status</h3>
+                  {aiHealth?.status === 'ok' ? (
+                    <span className="text-xl font-bold text-success border border-success px-2 py-1 inline-block text-center w-fit">ONLINE</span>
+                  ) : (
+                    <span className="text-xl font-bold text-danger border border-danger px-2 py-1 inline-block text-center w-fit">OFFLINE</span>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
         {activeTab === 'USERS' && (
           <div className="w-full">
             <div className="mb-6 max-w-md">
@@ -328,6 +370,44 @@ export const MasterDashboard: React.FC = () => {
                   </div>
                   <Button variant="accent" onClick={() => handleUpdateLimit('ADMIN_GENERATION_LIMIT', adminLimit)}>
                     Update Author Limit
+                  </Button>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-surface border border-border p-6 mb-6">
+              <h2 className="text-md font-bold mb-4 uppercase tracking-widest text-fg">System Controls</h2>
+              
+              <div className="space-y-6">
+                <div className="flex gap-4 items-end">
+                  <div className="flex-1">
+                    <Field label="Maintenance Mode (true/false)">
+                      <Input 
+                        type="text" 
+                        value={maintenanceMode} 
+                        onChange={(e: any) => setMaintenanceMode(e.target.value)} 
+                        placeholder="true or false"
+                      />
+                    </Field>
+                  </div>
+                  <Button variant={maintenanceMode === 'true' ? 'danger' : 'accent'} onClick={() => handleUpdateLimit('MAINTENANCE_MODE', maintenanceMode)}>
+                    Update
+                  </Button>
+                </div>
+
+                <div className="flex gap-4 items-end">
+                  <div className="flex-1">
+                    <Field label="System Announcement Text (leave blank to clear)">
+                      <Input 
+                        type="text" 
+                        value={systemAnnouncement} 
+                        onChange={(e: any) => setSystemAnnouncement(e.target.value)} 
+                        placeholder="Announcement message..."
+                      />
+                    </Field>
+                  </div>
+                  <Button variant="accent" onClick={() => handleUpdateLimit('SYSTEM_ANNOUNCEMENT_TEXT', systemAnnouncement)}>
+                    Update
                   </Button>
                 </div>
               </div>

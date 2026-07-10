@@ -38,6 +38,18 @@ export interface AuthorStat {
   totalViews: number;
 }
 
+export interface SystemStats {
+  totalUsers: number;
+  totalBlogs: number;
+  totalGenerations: number;
+}
+
+export interface AiHealth {
+  status: string;
+  service: string;
+  message?: string;
+}
+
 export interface AdminBlogSummary {
   id: string;
   title: string;
@@ -137,6 +149,12 @@ export const masterApi = createApi({
       }),
       invalidatesTags: ['Blog', 'AuthorStat'],
     }),
+    getSystemStats: builder.query<SystemStats, void>({
+      query: () => '/master/stats',
+    }),
+    getAiHealth: builder.query<AiHealth, void>({
+      query: () => '/master/ai-health',
+    }),
   }),
 });
 
@@ -154,4 +172,6 @@ export const {
   useDeleteBlogMutation,
   useGetSystemSettingsQuery,
   useUpdateSettingMutation,
+  useGetSystemStatsQuery,
+  useGetAiHealthQuery,
 } = masterApi;

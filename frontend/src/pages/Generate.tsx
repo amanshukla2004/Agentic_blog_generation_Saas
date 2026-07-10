@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useGenerateMultimodalMutation } from '../store/api/generationApi';
+import { useGetPublicSettingsQuery } from '../store/api/publicApi';
 import { Button, Panel, Field, Input, ThinkingDots } from '../components/tui/Primitives';
 import { systemLog } from '../utils/logger';
 
@@ -12,7 +13,10 @@ export const Generate = () => {
   const [pdfFile, setPdfFile] = useState<File | null>(null);
 
   const [generate, { isLoading, error }] = useGenerateMultimodalMutation();
+  const { data: settings } = useGetPublicSettingsQuery();
   const navigate = useNavigate();
+
+  const isMaintenanceMode = settings?.maintenanceMode === 'true';
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -34,6 +38,19 @@ export const Generate = () => {
       console.error('Generation failed:', err);
     }
   };
+
+  if (isMaintenanceMode) {
+    return (
+      <div className="max-w-2xl mx-auto py-12 px-4 font-mono text-sm">
+        <Panel title="System Maintenance" className="text-center py-12">
+          <p className="text-secondary text-xs uppercase tracking-widest leading-relaxed">
+            The AI engine is currently offline for scheduled maintenance. <br />
+            Please check back later.
+          </p>
+        </Panel>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-2xl mx-auto py-12 px-4 font-mono text-sm [--tw-accent:theme(colors.warning)]">
