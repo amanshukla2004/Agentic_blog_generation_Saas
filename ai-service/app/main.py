@@ -20,11 +20,6 @@ logger = logging.getLogger(__name__)
 
 app = FastAPI(title="AI Worker Microservice")
 
-@app.get("/health")
-async def health_check(secret: str = Depends(verify_internal_secret)):
-    """Simple health check endpoint to verify AI service status."""
-    return {"status": "ok", "service": "ai-worker"}
-
 def verify_internal_secret(x_internal_secret: str = Header(...)):
     """
     Security Bouncer: Validates that incoming requests have the correct internal secret.
@@ -36,6 +31,11 @@ def verify_internal_secret(x_internal_secret: str = Header(...)):
             raise HTTPException(status_code=403, detail="Forbidden: Invalid internal gateway secret")
     logger.info("Successfully validated internal gateway secret")
     return x_internal_secret
+
+@app.get("/health")
+async def health_check(secret: str = Depends(verify_internal_secret)):
+    """Simple health check endpoint to verify AI service status."""
+    return {"status": "ok", "service": "ai-worker"}
 
 def prepend_unsplash_image(blog_data: dict) -> dict:
     keyword = blog_data.get("hero_image_keyword", "technology")

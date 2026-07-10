@@ -162,7 +162,7 @@ public class MasterAdminController {
         try {
             HttpHeaders headers = new HttpHeaders();
             headers.set("X-Internal-Secret", internalSecret);
-            HttpEntity<String> entity = new HttpEntity<>("parameters", headers);
+            HttpEntity<Void> entity = new HttpEntity<>(headers);
             
             ResponseEntity<Map> response = restTemplate.exchange(
                 aiServiceBaseUrl + "/health", 
