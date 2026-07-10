@@ -14,7 +14,9 @@ public interface BlogRepository extends JpaRepository<BlogDraft, UUID> {
     
     // For Tier 0: Public Feed
     Page<BlogDraft> findByStatus(Status status, Pageable pageable);
+    Page<BlogDraft> findByCategoryAndStatus(String category, Status status, Pageable pageable);
     Optional<BlogDraft> findBySlugAndStatus(String slug, Status status);
+    Page<BlogDraft> findByIsStaffPickTrueAndStatus(Status status, Pageable pageable);
     
     // For Tier 1: User Dashboard
     List<BlogDraft> findByUserId(UUID userId);

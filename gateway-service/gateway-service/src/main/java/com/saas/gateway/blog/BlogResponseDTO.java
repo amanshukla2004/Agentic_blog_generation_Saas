@@ -19,7 +19,8 @@ public record BlogResponseDTO(
         String authorBio,
         java.util.List<String> tags,
         Integer likesCount,
-        Long viewCount
+        Long viewCount,
+        Boolean isStaffPick
 ) {
     public static BlogResponseDTO fromEntity(BlogDraft blog) {
         return new BlogResponseDTO(
@@ -38,7 +39,8 @@ public record BlogResponseDTO(
                 blog.getUser() != null ? blog.getUser().getBio() : null,
                 blog.getTags(),
                 blog.getLikesCount(),
-                blog.getViewCount()
+                blog.getViewCount(),
+                blog.getIsStaffPick()
         );
     }
 }

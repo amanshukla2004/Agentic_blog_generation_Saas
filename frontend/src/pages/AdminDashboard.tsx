@@ -1,11 +1,13 @@
 import React from 'react';
 import { useGetAllBlogsQuery, useDeleteAdminBlogMutation, usePublishBlogMutation } from '../store/api/adminApi';
-import { Button } from '../components/ui/Button';
+import { Button, Table, StatusBadge } from '../components/tui/Primitives';
+import { useNavigate } from 'react-router-dom';
 
 export const AdminDashboard = () => {
   const { data: blogs, isLoading, refetch } = useGetAllBlogsQuery();
   const [deleteBlog] = useDeleteAdminBlogMutation();
   const [publishBlog] = usePublishBlogMutation();
+  const navigate = useNavigate();
 
   const handleDelete = async (id: string) => {
     if (window.confirm('Are you sure you want to permanently delete this blog?')) {
@@ -14,71 +16,61 @@ export const AdminDashboard = () => {
     }
   };
 
-  const handlePublish = async (id: string) => {
-    const seoDesc = window.prompt('Enter an SEO description for this post:');
-    if (seoDesc !== null) {
-      await publishBlog({ id, seoDescription: seoDesc });
-      refetch();
-    }
+  const handlePublish = (id: string) => {
+    // Navigate to the editor for this draft where the admin can 
+    // fill in SEO metadata and Category before publishing.
+    navigate(`/draft/${id}`);
   };
 
+  const columns = ["Topic / Title", "Author", "Status", "Created At", "Actions"];
+
+  const renderRow = (blog: any) => (
+    <>
+      <td className="px-4 py-3">
+        <div className="font-bold text-fg mb-1">{blog.title || 'Untitled Draft'}</div>
+        <div className="text-secondary uppercase tracking-widest text-[10px]">{blog.topic}</div>
+      </td>
+      <td className="px-4 py-3 text-secondary tracking-widest uppercase">
+        {blog.authorUsername || blog.authorEmail?.split('@')[0] || "Unknown"}
+      </td>
+      <td className="px-4 py-3">
+        <StatusBadge status={blog.status}>{blog.status}</StatusBadge>
+      </td>
+      <td className="px-4 py-3 text-secondary tracking-widest uppercase">
+        {new Date(blog.createdAt).toLocaleString()}
+      </td>
+      <td className="px-4 py-3 flex gap-2">
+        {blog.status === 'DRAFT' && (
+          <Button 
+            variant="accent" 
+            onClick={() => handlePublish(blog.id)}
+            className="text-[10px] px-2 py-1 h-auto"
+          >
+            Review & Publish
+          </Button>
+        )}
+        <Button 
+          variant="danger" 
+          onClick={() => handleDelete(blog.id)}
+          className="text-[10px] px-2 py-1 h-auto"
+        >
+          Delete
+        </Button>
+      </td>
+    </>
+  );
+
   return (
-    <div className="max-w-7xl mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold text-zinc-900 mb-8">Admin Dashboard - Blogs</h1>
+    <div className="max-w-7xl mx-auto px-4 py-8 font-mono text-sm [--tw-accent:theme(colors.warning)]">
+      <div className="mb-6">
+        <h1 className="text-xl font-bold text-fg uppercase tracking-widest mb-1">Admin Dashboard</h1>
+        <p className="text-secondary text-xs uppercase tracking-widest">Platform Blogs Management</p>
+      </div>
       
       {isLoading ? (
-        <p className="text-zinc-500 font-mono">Loading platform blogs...</p>
+        <p className="text-secondary uppercase tracking-widest text-xs">Loading platform blogs...</p>
       ) : (
-        <div className="w-full overflow-x-auto">
-          <table className="w-full text-left text-sm text-zinc-900">
-            <thead>
-              <tr className="border-b border-zinc-200">
-                <th className="pb-3 font-medium">Topic / Title</th>
-                <th className="pb-3 font-medium">Author</th>
-                <th className="pb-3 font-medium">Status</th>
-                <th className="pb-3 font-medium">Created At</th>
-                <th className="pb-3 font-medium text-right">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {blogs?.map((blog) => (
-                <tr key={blog.id} className="border-b border-zinc-100 last:border-0 hover:bg-zinc-50/50 transition-colors">
-                  <td className="py-4">
-                    <div className="font-medium">{blog.title || 'Untitled Draft'}</div>
-                    <div className="text-zinc-500 font-mono text-xs mt-1">{blog.topic}</div>
-                  </td>
-                  <td className="py-4 text-zinc-700 text-sm">
-                    {blog.authorEmail}
-                  </td>
-                  <td className="py-4">
-                    <span className={`px-2.5 py-1 text-xs font-medium rounded ${blog.status === 'PUBLISHED' ? 'bg-emerald-50 text-emerald-700' : 'bg-zinc-100 text-zinc-700'}`}>
-                      {blog.status}
-                    </span>
-                  </td>
-                  <td className="py-4 font-mono text-xs text-zinc-500">
-                    {new Date(blog.createdAt).toLocaleString()}
-                  </td>
-                  <td className="py-4 text-right space-x-2">
-                    {blog.status === 'DRAFT' && (
-                      <button 
-                        onClick={() => handlePublish(blog.id)}
-                        className="text-xs font-medium px-3 py-1.5 border border-zinc-200 rounded text-zinc-700 hover:bg-zinc-50 active:scale-95 transition-transform whitespace-nowrap"
-                      >
-                        Publish
-                      </button>
-                    )}
-                    <button 
-                      onClick={() => handleDelete(blog.id)}
-                      className="text-xs font-medium px-3 py-1.5 border border-red-200 rounded text-red-700 hover:bg-red-50 active:scale-95 transition-transform whitespace-nowrap"
-                    >
-                      Delete
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+        <Table columns={columns} data={blogs || []} renderRow={renderRow} />
       )}
     </div>
   );

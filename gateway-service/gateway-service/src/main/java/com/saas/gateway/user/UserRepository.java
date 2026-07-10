@@ -12,6 +12,7 @@ import com.saas.gateway.system.AuthorStat;
 @Repository
 public interface UserRepository extends JpaRepository<User, UUID> {
     Optional<User> findByEmail(String email);
+    boolean existsByUsername(String username);
 
     @Query("SELECT new com.saas.gateway.system.AuthorStat(u.id, u.email, u.username, COUNT(b.id), COALESCE(SUM(b.viewCount), 0)) " +
            "FROM User u LEFT JOIN BlogDraft b ON u.id = b.user.id AND b.status = 'PUBLISHED' " +

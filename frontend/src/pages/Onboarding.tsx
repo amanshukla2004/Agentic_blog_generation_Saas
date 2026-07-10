@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useUpdateProfileMutation } from '../store/api/userApi';
+import { useUpdateProfileMutation, useLazyCheckUsernameQuery } from '../store/api/userApi';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
 import { Card } from '../components/ui/Card';
@@ -9,7 +9,9 @@ export const Onboarding: React.FC = () => {
   const [name, setName] = useState('');
   const [username, setUsername] = useState('');
   const [bio, setBio] = useState('');
+  const [isUsernameAvailable, setIsUsernameAvailable] = useState<boolean | null>(null);
   const [updateProfile, { isLoading, error }] = useUpdateProfileMutation();
+  const [checkUsername, { isFetching: checkingUsername }] = useLazyCheckUsernameQuery();
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -23,54 +25,68 @@ export const Onboarding: React.FC = () => {
     }
   };
 
+  const handleUsernameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, '');
+    setUsername(val);
+    if (val.length > 2) {
+      checkUsername(val).then(({ data }) => setIsUsernameAvailable(data?.available ?? null));
+    } else {
+      setIsUsernameAvailable(null);
+    }
+  };
+
   return (
-    <div className="flex justify-center items-center min-h-[80vh] px-4">
-      <Card className="w-full max-w-lg p-8 md:p-12 border border-zinc-200 shadow-sm rounded-xl">
-        <div className="text-center mb-8">
-          <h1 className="text-2xl font-bold text-zinc-900 mb-2">Welcome to AgenticBlog</h1>
-          <p className="text-sm text-zinc-500 font-medium">Let's set up your profile before you start writing.</p>
+    <div className="flex justify-center items-center min-h-[80vh] px-4 font-mono text-sm [--tw-accent:theme(colors.accent)]">
+      <Card className="w-full max-w-lg p-8 md:p-12 border border-border shadow-sm rounded-xl bg-surface">
+        <div className="text-center mb-12">
+          <h1 className="text-3xl font-bold text-fg mb-4 uppercase tracking-widest">Welcome to AgenticBlog</h1>
+          <p className="text-sm text-secondary uppercase tracking-widest">Let's set up your profile before you start writing.</p>
         </div>
 
-        <form onSubmit={handleSubmit} className="flex flex-col gap-6">
-          <div className="space-y-2">
-            <label className="text-sm font-semibold text-zinc-900">Display Name</label>
+        <form onSubmit={handleSubmit} className="flex flex-col gap-8">
+          <div className="space-y-3">
+            <label className="text-xs uppercase tracking-widest font-bold text-fg">Display Name</label>
             <Input 
               placeholder="e.g. Jane Doe"
               value={name}
-              onChange={(e) => setName(e.target.value)}
+              onChange={(e: any) => setName(e.target.value)}
               className="w-full"
             />
           </div>
 
-          <div className="space-y-2">
-            <label className="text-sm font-semibold text-zinc-900">Username</label>
+          <div className="space-y-3">
+            <label className="text-xs uppercase tracking-widest font-bold text-fg">Username</label>
             <div className="relative flex items-center">
-              <span className="absolute left-3 text-zinc-400 font-medium select-none">@</span>
+              <span className="absolute left-3 text-secondary font-medium select-none">@</span>
               <input 
                 type="text"
                 placeholder="janedoe"
                 value={username}
-                onChange={(e) => setUsername(e.target.value)}
+                onChange={handleUsernameChange}
                 required
-                className="w-full pl-8 pr-4 py-2 border border-zinc-200 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-zinc-900 focus:border-transparent transition-all"
+                className={`w-full pl-8 pr-12 py-3 bg-bg border ${isUsernameAvailable === false ? 'border-danger' : isUsernameAvailable === true ? 'border-success' : 'border-border'} text-fg text-sm focus:outline-none focus:border-accent transition-all`}
               />
+              {checkingUsername && <span className="absolute right-3 text-secondary text-xs uppercase">Wait</span>}
+              {!checkingUsername && isUsernameAvailable === true && <span className="absolute right-3 text-success text-xs">OK</span>}
+              {!checkingUsername && isUsernameAvailable === false && <span className="absolute right-3 text-danger text-xs">TAKEN</span>}
             </div>
+            {isUsernameAvailable === false && <p className="text-danger text-xs uppercase tracking-widest mt-1">Username is already taken.</p>}
           </div>
 
-          <div className="space-y-2">
-            <label className="text-sm font-semibold text-zinc-900">Short Bio</label>
+          <div className="space-y-3">
+            <label className="text-xs uppercase tracking-widest font-bold text-fg">Short Bio</label>
             <textarea 
-              rows={3}
+              rows={4}
               placeholder="Software Engineer, writer, and tech enthusiast."
               value={bio}
               onChange={(e) => setBio(e.target.value)}
-              className="w-full px-4 py-2 border border-zinc-200 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-zinc-900 focus:border-transparent transition-all resize-none"
+              className="w-full px-4 py-3 bg-bg border border-border text-fg text-sm focus:outline-none focus:border-accent transition-all resize-none"
             />
           </div>
 
-          {error && <p className="text-red-600 text-sm font-medium text-center">Failed to save profile. Please try again.</p>}
+          {error && <p className="text-danger text-xs uppercase tracking-widest text-center mt-2">Failed to save profile. Please try again.</p>}
 
-          <Button type="submit" disabled={isLoading} className="w-full mt-4 bg-zinc-900 text-white hover:bg-zinc-800 active:scale-95 transition-all py-2.5 rounded-md font-semibold">
+          <Button type="submit" disabled={isLoading || isUsernameAvailable === false || username.length < 3} className="w-full mt-6 py-4 uppercase tracking-widest">
             {isLoading ? 'Saving...' : 'Complete Profile'}
           </Button>
         </form>

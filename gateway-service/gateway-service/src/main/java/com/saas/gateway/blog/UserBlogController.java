@@ -1,5 +1,9 @@
 package com.saas.gateway.blog;
 
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
+import com.saas.gateway.gateway.AiGenerationService;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,9 +26,11 @@ import java.util.stream.Collectors;
 public class UserBlogController {
 
     private final BlogRepository blogRepository;
+    private final AiGenerationService aiGenerationService;
 
-    public UserBlogController(BlogRepository blogRepository) {
+    public UserBlogController(BlogRepository blogRepository, AiGenerationService aiGenerationService) {
         this.blogRepository = blogRepository;
+        this.aiGenerationService = aiGenerationService;
     }
 
     @GetMapping
@@ -45,9 +51,28 @@ public class UserBlogController {
         UUID userId = UUID.fromString(principal.getName());
         return blogRepository.findByIdAndUserId(id, userId).map(blog -> {
             String rawMarkdown = body.get("rawMarkdown");
+            String title = body.get("title");
             if (rawMarkdown != null) {
                 blog.setRawMarkdown(rawMarkdown);
             }
+            if (title != null && !title.isBlank()) {
+                blog.setTitle(title);
+            }
+            return ResponseEntity.ok(BlogResponseDTO.fromEntity(blogRepository.save(blog)));
+        }).orElse(ResponseEntity.notFound().build());
+    }
+
+    @org.springframework.web.bind.annotation.PostMapping("/{id}/revise")
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN', 'MASTER_ADMIN')")
+    public ResponseEntity<BlogResponseDTO> reviseBlog(@PathVariable UUID id, @RequestBody Map<String, String> body, Principal principal) {
+        UUID userId = UUID.fromString(principal.getName());
+        return blogRepository.findByIdAndUserId(id, userId).map(blog -> {
+            String instruction = body.get("instruction");
+            if (instruction == null || instruction.isBlank()) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Instruction is required");
+            }
+            String revisedMarkdown = aiGenerationService.reviseBlog(blog.getRawMarkdown(), instruction).block();
+            blog.setRawMarkdown(revisedMarkdown);
             return ResponseEntity.ok(BlogResponseDTO.fromEntity(blogRepository.save(blog)));
         }).orElse(ResponseEntity.notFound().build());
     }

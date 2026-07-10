@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { 
   useGetUsersQuery, 
   useResetUserQuotaMutation, 
@@ -7,13 +8,17 @@ import {
   useGetSystemErrorsQuery,
   useUpdatePromptMutation,
   useGetPromptsQuery,
-  useGetAuthorsStatsQuery
+  useGetAuthorsStatsQuery,
+  useGetAllBlogsQuery,
+  useToggleStaffPickMutation,
+  useDeleteBlogMutation
 } from '../store/api/masterApi';
-import { Button } from '../components/ui/Button';
+import { Button, Table, Tabs, RoleBadge, Progress, StatusBadge, Input, Field } from '../components/tui/Primitives';
 
-type Tab = 'USERS' | 'AUTHORS' | 'LOGS' | 'PROMPTS';
+type Tab = 'USERS' | 'AUTHORS' | 'BLOGS' | 'LOGS' | 'PROMPTS';
 
 export const MasterDashboard: React.FC = () => {
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<Tab>('USERS');
 
   const { data: users, isLoading: usersLoading, refetch: refetchUsers } = useGetUsersQuery();
@@ -25,6 +30,9 @@ export const MasterDashboard: React.FC = () => {
   const [updatePrompt] = useUpdatePromptMutation();
   const { data: prompts } = useGetPromptsQuery();
   const { data: authors, isLoading: authorsLoading } = useGetAuthorsStatsQuery();
+  const { data: blogsData, isLoading: blogsLoading, refetch: refetchBlogs } = useGetAllBlogsQuery({ page: 0, size: 50 });
+  const [toggleStaffPick] = useToggleStaffPickMutation();
+  const [deleteBlog] = useDeleteBlogMutation();
 
   const [promptText, setPromptText] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
@@ -53,7 +61,6 @@ export const MasterDashboard: React.FC = () => {
   const handleSavePrompt = async () => {
     if (!promptText.trim()) return;
     
-    // Double confirmation
     const firstConfirm = window.confirm("WARNING: Are you sure you want to update the core system AI prompt? This will affect all future generations.");
     if (!firstConfirm) return;
 
@@ -64,141 +71,154 @@ export const MasterDashboard: React.FC = () => {
     alert('Configuration saved successfully.');
   };
 
-  return (
-    <div className="max-w-7xl mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold text-zinc-900 mb-8">Master Control</h1>
+  const userColumns = ["Email", "Role", "Generations", "Status", "Actions"];
+  const authorColumns = ["Email", "Username", "Published Blogs", "Total Views"];
+  const blogColumns = ["Title", "Author", "Status", "Views", "Created At", "Actions"];
 
-      <div className="flex space-x-6 border-b border-zinc-200 mb-8">
-        <button
-          onClick={() => setActiveTab('USERS')}
-          className={`pb-3 font-medium transition-colors ${activeTab === 'USERS' ? 'text-zinc-900 border-b-2 border-zinc-900' : 'text-zinc-500 hover:text-zinc-700'}`}
+  const handleToggleStaffPick = async (id: string, currentStatus: boolean) => {
+    await toggleStaffPick({ id, isStaffPick: !currentStatus });
+    refetchBlogs();
+  };
+
+  const handleDeleteBlog = async (id: string) => {
+    if (window.confirm("Are you sure you want to completely delete this blog? This action cannot be undone.")) {
+      await deleteBlog(id);
+      refetchBlogs();
+    }
+  };
+
+  const renderUserRow = (user: any) => (
+    <>
+      <td className="px-4 py-3">{user.email}</td>
+      <td className="px-4 py-3"><RoleBadge role={user.role} /></td>
+      <td className="px-4 py-3 min-w-[120px]">
+        <div className="flex justify-between text-[10px] mb-1">
+          <span>{user.generationsCount} / 5</span>
+          {user.generationsCount >= 5 && <span className="text-danger">QUOTA EXCEEDED</span>}
+        </div>
+        <Progress value={user.generationsCount} max={5} />
+      </td>
+      <td className="px-4 py-3">
+        <StatusBadge status={user.isActive ? 'SUCCESS' : 'ERROR'}>
+          {user.isActive ? 'ACTIVE' : 'BANNED'}
+        </StatusBadge>
+      </td>
+      <td className="px-4 py-3 flex gap-2 flex-wrap">
+        <Button variant="ghost" onClick={() => handleResetQuota(user.id)} className="text-[10px] px-2 py-1 h-auto">Reset</Button>
+        {user.role !== 'MASTER_ADMIN' && (
+          <Button variant="accent" onClick={() => handleToggleAdmin(user.id)} className="text-[10px] px-2 py-1 h-auto">
+            {user.role === 'ADMIN' ? 'Demote' : 'Make Admin'}
+          </Button>
+        )}
+        <Button variant="danger" onClick={() => handleToggleActive(user.id)} className="text-[10px] px-2 py-1 h-auto">
+          {user.isActive ? 'Ban' : 'Unban'}
+        </Button>
+      </td>
+    </>
+  );
+
+  const renderAuthorRow = (author: any) => (
+    <>
+      <td className="px-4 py-3">{author.email}</td>
+      <td className="px-4 py-3 text-secondary">{author.username || 'N/A'}</td>
+      <td className="px-4 py-3">{author.totalBlogs}</td>
+      <td className="px-4 py-3">{author.totalViews}</td>
+    </>
+  );
+
+  const renderBlogRow = (blog: any) => (
+    <>
+      <td className="px-4 py-3 min-w-[200px]">
+        <div className="font-bold">{blog.title}</div>
+        <div className="text-[10px] text-secondary truncate max-w-[300px]">{blog.slug}</div>
+      </td>
+      <td className="px-4 py-3 text-secondary">{blog.authorEmail}</td>
+      <td className="px-4 py-3">
+        <StatusBadge status={blog.status === 'PUBLISHED' ? 'SUCCESS' : blog.status === 'FAILED' ? 'ERROR' : 'WARNING'}>
+          {blog.status}
+        </StatusBadge>
+      </td>
+      <td className="px-4 py-3 text-secondary">{blog.viewCount || 0}</td>
+      <td className="px-4 py-3 text-secondary text-xs">{new Date(blog.createdAt).toLocaleDateString()}</td>
+      <td className="px-4 py-3 flex gap-2">
+        <Button 
+          variant="ghost" 
+          onClick={() => navigate(`/blog/${blog.slug}`)}
+          className="text-[10px] px-2 py-1 h-auto"
+          disabled={blog.status !== 'PUBLISHED'}
         >
-          Users
-        </button>
-        <button
-          onClick={() => setActiveTab('AUTHORS')}
-          className={`pb-3 font-medium transition-colors ${activeTab === 'AUTHORS' ? 'text-zinc-900 border-b-2 border-zinc-900' : 'text-zinc-500 hover:text-zinc-700'}`}
+          View
+        </Button>
+        <Button 
+          variant={blog.isStaffPick ? "accent" : "ghost"} 
+          onClick={() => handleToggleStaffPick(blog.id, blog.isStaffPick)} 
+          className="text-[10px] px-2 py-1 h-auto"
+          disabled={blog.status !== 'PUBLISHED'}
         >
-          Author Stats
-        </button>
-        <button
-          onClick={() => setActiveTab('LOGS')}
-          className={`pb-3 font-medium transition-colors ${activeTab === 'LOGS' ? 'text-zinc-900 border-b-2 border-zinc-900' : 'text-zinc-500 hover:text-zinc-700'}`}
+          {blog.isStaffPick ? 'Unpick' : 'Pick'}
+        </Button>
+        <Button 
+          variant="danger" 
+          onClick={() => handleDeleteBlog(blog.id)} 
+          className="text-[10px] px-2 py-1 h-auto"
         >
-          System Logs
-        </button>
-        <button
-          onClick={() => setActiveTab('PROMPTS')}
-          className={`pb-3 font-medium transition-colors ${activeTab === 'PROMPTS' ? 'text-zinc-900 border-b-2 border-zinc-900' : 'text-zinc-500 hover:text-zinc-700'}`}
-        >
-          Prompts
-        </button>
+          Delete
+        </Button>
+      </td>
+    </>
+  );
+
+  return (
+    <div className="max-w-7xl mx-auto px-4 py-8 font-mono text-sm [--tw-accent:theme(colors.role-master)]">
+      <div className="mb-6">
+        <h1 className="text-xl font-bold text-fg uppercase tracking-widest mb-1">Master Control</h1>
+        <p className="text-secondary text-xs uppercase tracking-widest">Platform Administration</p>
       </div>
+
+      <Tabs 
+        tabs={['USERS', 'AUTHORS', 'BLOGS', 'LOGS', 'PROMPTS']} 
+        activeTab={activeTab} 
+        onTabChange={(tab: Tab) => setActiveTab(tab)} 
+      />
 
       <div>
         {activeTab === 'USERS' && (
           <div className="w-full">
-            <div className="mb-4">
-              <input 
-                type="text" 
+            <div className="mb-6 max-w-md">
+              <Input 
                 placeholder="Search by email..."
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full max-w-md px-4 py-2 border border-zinc-200 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-zinc-900"
+                onChange={(e: any) => setSearchQuery(e.target.value)}
               />
             </div>
-            <div className="w-full overflow-x-auto">
-              {usersLoading ? (
-                <p className="text-zinc-500 font-mono">Loading user data...</p>
-              ) : (
-                <table className="w-full text-left text-sm text-zinc-900">
-                  <thead>
-                    <tr className="border-b border-zinc-200">
-                      <th className="pb-3 font-medium">Email</th>
-                      <th className="pb-3 font-medium">Role</th>
-                      <th className="pb-3 font-medium">Generations</th>
-                      <th className="pb-3 font-medium">Status</th>
-                      <th className="pb-3 font-medium text-right">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {users?.filter(u => u.email.toLowerCase().includes(searchQuery.toLowerCase())).map((user) => (
-                      <tr key={user.id} className="border-b border-zinc-100 last:border-0 hover:bg-zinc-50/50 transition-colors">
-                      <td className="py-4">{user.email}</td>
-                      <td className="py-4">
-                        <span className="font-mono text-xs px-2 py-1 bg-zinc-100 text-zinc-800 rounded">
-                          {user.role}
-                        </span>
-                      </td>
-                      <td className="py-4 font-mono">
-                        {user.generationsCount} / 5
-                      </td>
-                      <td className="py-4">
-                        <span className={`px-2.5 py-1 text-xs font-medium rounded ${user.isActive ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-700'}`}>
-                          {user.isActive ? 'Active' : 'Banned'}
-                        </span>
-                      </td>
-                      <td className="py-4 text-right space-x-2">
-                        <button 
-                          onClick={() => handleResetQuota(user.id)}
-                          className="text-xs font-medium px-3 py-1.5 border border-zinc-200 rounded text-zinc-700 hover:bg-zinc-50 active:scale-95 transition-transform whitespace-nowrap"
-                        >
-                          Reset
-                        </button>
-                        <button 
-                          onClick={() => handleToggleActive(user.id)}
-                          className="text-xs font-medium px-3 py-1.5 border border-zinc-200 rounded text-zinc-700 hover:bg-zinc-50 active:scale-95 transition-transform whitespace-nowrap"
-                        >
-                          {user.isActive ? 'Ban' : 'Unban'}
-                        </button>
-                        {user.role !== 'MASTER_ADMIN' && (
-                          <button 
-                            onClick={() => handleToggleAdmin(user.id)}
-                            className="text-xs font-medium px-3 py-1.5 border border-zinc-200 rounded text-emerald-700 hover:bg-emerald-50 active:scale-95 transition-transform whitespace-nowrap"
-                          >
-                            {user.role === 'ADMIN' ? 'Demote' : 'Make Admin'}
-                          </button>
-                        )}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+            {usersLoading ? (
+              <p className="text-secondary uppercase tracking-widest text-xs">Loading user data...</p>
+            ) : (
+              <Table 
+                columns={userColumns} 
+                data={users?.filter(u => u.email.toLowerCase().includes(searchQuery.toLowerCase())) || []} 
+                renderRow={renderUserRow} 
+              />
             )}
-            </div>
           </div>
         )}
 
         {activeTab === 'AUTHORS' && (
-          <div className="w-full overflow-x-auto">
+          <div className="w-full">
             {authorsLoading ? (
-              <p className="text-zinc-500 font-mono">Loading author stats...</p>
+              <p className="text-secondary uppercase tracking-widest text-xs">Loading author stats...</p>
             ) : (
-              <table className="w-full text-left text-sm text-zinc-900">
-                <thead>
-                  <tr className="border-b border-zinc-200">
-                    <th className="pb-3 font-medium">Email</th>
-                    <th className="pb-3 font-medium">Username</th>
-                    <th className="pb-3 font-medium">Published Blogs</th>
-                    <th className="pb-3 font-medium">Total Views</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {authors?.map((author) => (
-                    <tr key={author.userId} className="border-b border-zinc-100 last:border-0 hover:bg-zinc-50/50 transition-colors">
-                      <td className="py-4">{author.email}</td>
-                      <td className="py-4 text-zinc-500">{author.username || 'N/A'}</td>
-                      <td className="py-4 font-mono font-medium">{author.totalBlogs}</td>
-                      <td className="py-4 font-mono font-medium">{author.totalViews}</td>
-                    </tr>
-                  ))}
-                  {authors?.length === 0 && (
-                    <tr>
-                      <td colSpan={4} className="py-8 text-center text-zinc-500">No authors found.</td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
+              <Table columns={authorColumns} data={authors || []} renderRow={renderAuthorRow} />
+            )}
+          </div>
+        )}
+
+        {activeTab === 'BLOGS' && (
+          <div className="w-full">
+            {blogsLoading ? (
+              <p className="text-secondary uppercase tracking-widest text-xs">Loading blogs...</p>
+            ) : (
+              <Table columns={blogColumns} data={blogsData?.content || []} renderRow={renderBlogRow} />
             )}
           </div>
         )}
@@ -206,17 +226,17 @@ export const MasterDashboard: React.FC = () => {
         {activeTab === 'LOGS' && (
           <div className="w-full">
             {logsLoading ? (
-              <p className="text-zinc-500 font-mono">Loading system logs...</p>
+              <p className="text-secondary uppercase tracking-widest text-xs">Loading system logs...</p>
             ) : (
-              <div className="bg-zinc-950 rounded p-6 overflow-x-auto">
-                {logs?.length === 0 && <p className="text-zinc-500 font-mono text-sm">No errors recorded.</p>}
+              <div className="bg-surface border border-border p-4">
+                {logs?.length === 0 && <p className="text-secondary text-xs uppercase tracking-widest">No errors recorded.</p>}
                 {logs?.map((log) => (
-                  <div key={log.id} className="mb-4 last:mb-0 border-b border-zinc-800 pb-4 last:border-0">
-                    <div className="flex items-center gap-4 mb-2">
-                      <span className="font-mono text-xs text-zinc-500">{new Date(log.createdAt).toISOString()}</span>
-                      <span className="font-mono text-xs text-red-400 bg-red-400/10 px-2 py-0.5 rounded">{log.endpoint}</span>
+                  <div key={log.id} className="mb-6 last:mb-0 border-b border-border pb-6 last:border-0 last:pb-0">
+                    <div className="flex items-center gap-4 mb-3">
+                      <span className="text-xs text-secondary">{new Date(log.createdAt).toISOString()}</span>
+                      <span className="text-xs text-danger border border-danger px-1">{log.endpoint}</span>
                     </div>
-                    <pre className="font-mono text-sm text-zinc-300 whitespace-pre-wrap leading-relaxed">
+                    <pre className="text-xs text-fg whitespace-pre-wrap leading-relaxed">
                       {log.errorMessage}
                     </pre>
                   </div>
@@ -228,19 +248,17 @@ export const MasterDashboard: React.FC = () => {
 
         {activeTab === 'PROMPTS' && (
           <div className="w-full max-w-4xl">
-            <p className="text-sm text-zinc-500 mb-4">Edit the global system prompt used by the AI engine.</p>
-            <textarea
-              className="w-full min-h-[400px] p-6 border border-zinc-200 rounded font-mono text-sm leading-relaxed text-zinc-900 focus:outline-none focus:ring-1 focus:ring-zinc-900 focus:border-zinc-900 resize-y mb-6"
-              placeholder="Enter system prompt here..."
-              value={promptText}
-              onChange={(e) => setPromptText(e.target.value)}
-            />
-            <button 
-              onClick={handleSavePrompt}
-              className="px-6 py-3 bg-zinc-900 text-white font-medium rounded hover:bg-zinc-800 active:scale-95 transition-all"
-            >
+            <Field label="System Prompt Configuration">
+              <textarea
+                className="tui-input min-h-[400px] resize-y mb-4"
+                placeholder="Enter system prompt here..."
+                value={promptText}
+                onChange={(e) => setPromptText(e.target.value)}
+              />
+            </Field>
+            <Button variant="danger" onClick={handleSavePrompt} icon="!">
               Save Configuration
-            </button>
+            </Button>
           </div>
         )}
       </div>

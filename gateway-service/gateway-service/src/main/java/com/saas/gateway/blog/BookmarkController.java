@@ -77,7 +77,8 @@ public class BookmarkController {
                 blog.getUser() != null ? blog.getUser().getUsername() : null,
                 blog.getTags(),
                 blog.getLikesCount(),
-                blog.getViewCount()
+                blog.getViewCount(),
+                blog.getIsStaffPick()
             );
         });
         

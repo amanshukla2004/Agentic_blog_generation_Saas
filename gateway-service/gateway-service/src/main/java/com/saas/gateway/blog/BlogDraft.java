@@ -56,6 +56,9 @@ public class BlogDraft {
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt = Instant.now();
 
+    @Column(name = "is_staff_pick")
+    private Boolean isStaffPick = false;
+
     // Constructors
     public BlogDraft() {}
 
@@ -101,4 +104,7 @@ public class BlogDraft {
 
     public Long getViewCount() { return viewCount; }
     public void setViewCount(Long viewCount) { this.viewCount = viewCount; }
+
+    public Boolean getIsStaffPick() { return isStaffPick; }
+    public void setIsStaffPick(Boolean isStaffPick) { this.isStaffPick = isStaffPick; }
 }

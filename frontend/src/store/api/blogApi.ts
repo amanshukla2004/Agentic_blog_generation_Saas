@@ -12,6 +12,7 @@ export interface PublicBlogSummary {
   authorUsername?: string;
   viewCount: number;
   tags: string[];
+  isStaffPick?: boolean;
 }
 
 export interface BlogDraft {
@@ -27,6 +28,8 @@ export interface BlogDraft {
   authorUsername?: string;
   viewCount: number;
   tags: string[];
+  category?: string;
+  seoKeywords?: string;
 }
 
 export interface PageResponse<T> {
@@ -47,16 +50,30 @@ export const blogApi = createApi({
   baseQuery,
   tagTypes: ['Blog', 'Bookmark'],
   endpoints: (builder) => ({
-    getPublicBlogs: builder.query<PageResponse<PublicBlogSummary>, { page?: number; size?: number }>({
+    getPublicBlogs: builder.query<PageResponse<PublicBlogSummary>, { page?: number; size?: number; category?: string | null }>({
       query: (params) => ({
         url: '/public/blogs',
         params,
       }),
       providesTags: ['Blog'],
     }),
-    getTrendingBlogs: builder.query<PageResponse<PublicBlogSummary>, { page?: number; size?: number }>({
+    getTrendingBlogs: builder.query<PageResponse<PublicBlogSummary>, { page?: number; size?: number; category?: string | null }>({
       query: (params) => ({
         url: '/public/blogs/trending',
+        params,
+      }),
+      providesTags: ['Blog'],
+    }),
+    getTopBlogs: builder.query<PageResponse<PublicBlogSummary>, { page?: number; size?: number; category?: string | null }>({
+      query: (params) => ({
+        url: '/public/blogs/top',
+        params,
+      }),
+      providesTags: ['Blog'],
+    }),
+    getStaffPicks: builder.query<PageResponse<PublicBlogSummary>, { page?: number; size?: number }>({
+      query: (params) => ({
+        url: '/public/blogs/staff-picks',
         params,
       }),
       providesTags: ['Blog'],
@@ -72,11 +89,19 @@ export const blogApi = createApi({
       query: () => '/blogs',
       providesTags: ['Blog'],
     }),
-    updateBlog: builder.mutation<BlogDraft, { id: string; rawMarkdown: string }>({
-      query: ({ id, rawMarkdown }) => ({
+    updateBlog: builder.mutation<BlogDraft, { id: string; rawMarkdown?: string; title?: string }>({
+      query: ({ id, ...body }) => ({
         url: `/blogs/${id}`,
         method: 'PUT',
-        body: { rawMarkdown },
+        body,
+      }),
+      invalidatesTags: ['Blog'],
+    }),
+    reviseBlog: builder.mutation<BlogDraft, { id: string; instruction: string }>({
+      query: ({ id, instruction }) => ({
+        url: `/blogs/${id}/revise`,
+        method: 'POST',
+        body: { instruction },
       }),
       invalidatesTags: ['Blog'],
     }),
@@ -90,9 +115,17 @@ export const blogApi = createApi({
     toggleBookmark: builder.mutation<void, { blogId: string; isBookmarked: boolean }>({
       query: ({ blogId, isBookmarked }) => ({
         url: `/bookmarks/${blogId}`,
-        method: isBookmarked ? 'DELETE' : 'POST',
+        method: isBookmarked ? 'POST' : 'DELETE',
       }),
       invalidatesTags: ['Bookmark'],
+    }),
+    toggleStaffPick: builder.mutation<void, { id: string; isStaffPick: boolean }>({
+      query: ({ id, isStaffPick }) => ({
+        url: `/admin/blogs/${id}/staff-pick`,
+        method: 'PUT',
+        body: { isStaffPick },
+      }),
+      invalidatesTags: ['Blog'],
     }),
     getMyBookmarks: builder.query<PageResponse<PublicBlogSummary>, { page?: number; size?: number }>({
       query: (params) => ({
@@ -111,12 +144,16 @@ export const blogApi = createApi({
 export const { 
   useGetPublicBlogsQuery, 
   useGetTrendingBlogsQuery,
+  useGetTopBlogsQuery,
+  useGetStaffPicksQuery,
   useGetPlatformStatsQuery,
   useGetBlogBySlugQuery, 
   useGetUserBlogsQuery,
   useUpdateBlogMutation,
+  useReviseBlogMutation,
   useDeleteBlogMutation,
   useToggleBookmarkMutation,
+  useToggleStaffPickMutation,
   useGetMyBookmarksQuery,
   useGetMyBookmarkedBlogIdsQuery,
 } = blogApi;

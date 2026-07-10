@@ -3,14 +3,13 @@ import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { useLoginMutation } from '../store/api/authApi';
 import { setCredentials } from '../store/slices/authSlice';
-import { Button } from '../components/ui/Button';
-import { Input } from '../components/ui/Input';
-import { Card } from '../components/ui/Card';
+import { Button, Panel, Field, Input } from '../components/tui/Primitives';
 import { systemLog } from '../utils/logger';
 
 export const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [login, { isLoading, error }] = useLoginMutation();
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -30,30 +29,57 @@ export const Login = () => {
   };
 
   return (
-    <div className="flex justify-center items-center h-full pt-20">
-      <Card className="w-full max-w-md p-8">
-        <h1 className="headline-lg text-center mb-6">Welcome Back</h1>
-        <form onSubmit={handleSubmit} className="flex flex-col gap-6">
-          <Input 
-            label="Email" 
-            type="email" 
-            required 
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-          />
-          <Input 
-            label="Password" 
-            type="password" 
-            required 
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          />
-          {error && <p className="text-error label-sm">Invalid credentials</p>}
-          <Button type="submit" disabled={isLoading}>
-            {isLoading ? 'Logging in...' : 'Log In'}
-          </Button>
+    <div className="flex justify-center items-center h-[calc(100vh-80px)] font-mono text-sm">
+      <Panel title="AUTHENTICATION" className="w-full max-w-md mt-0">
+        <div className="mb-6 border-b border-border pb-4">
+          <h1 className="text-xl font-bold text-fg uppercase tracking-widest">Login</h1>
+        </div>
+        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+          <Field label="Email">
+            <Input 
+              type="email" 
+              required 
+              value={email}
+              onChange={(e: any) => setEmail(e.target.value)}
+              placeholder="user@example.com"
+            />
+          </Field>
+          
+          <Field label="Password">
+            <div className="relative flex items-center">
+              <Input 
+                type={showPassword ? "text" : "password"} 
+                required 
+                value={password}
+                onChange={(e: any) => setPassword(e.target.value)}
+                placeholder="••••••••"
+              />
+              <button 
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 text-secondary hover:text-fg outline-none"
+                title={showPassword ? "Hide password" : "Show password"}
+              >
+                {showPassword ? '◎' : '◉'}
+              </button>
+            </div>
+          </Field>
+          
+          {error && <p className="text-danger uppercase tracking-widest text-xs mt-2">Invalid credentials</p>}
+          
+          <div className="mt-4 flex justify-end">
+            <Button type="submit" variant="primary" disabled={isLoading}>
+              {isLoading ? 'Logging in...' : 'Log In'}
+            </Button>
+          </div>
         </form>
-      </Card>
+        
+        <div className="mt-6 pt-4 border-t border-border text-center">
+          <p className="text-secondary text-xs uppercase tracking-widest">
+            Not registered yet? <a href="/register" className="text-accent hover:text-fg font-bold">Register now</a>
+          </p>
+        </div>
+      </Panel>
     </div>
   );
 };

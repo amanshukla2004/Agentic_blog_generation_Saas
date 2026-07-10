@@ -15,4 +15,6 @@ public interface AiGenerationService {
             String rawText,
             MultipartFile pdfFile
     );
+
+    Mono<String> reviseBlog(String currentMarkdown, String instruction);
 }

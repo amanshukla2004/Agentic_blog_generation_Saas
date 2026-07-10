@@ -1,10 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { motion } from 'motion/react';
 import { useGenerateMultimodalMutation } from '../store/api/generationApi';
-import { Button } from '../components/ui/Button';
-import { Input } from '../components/ui/Input';
-import { Card } from '../components/ui/Card';
+import { Button, Panel, Field, Input, ThinkingDots } from '../components/tui/Primitives';
 import { systemLog } from '../utils/logger';
 
 export const Generate = () => {
@@ -38,79 +35,84 @@ export const Generate = () => {
     }
   };
 
-  if (isLoading) {
-    return (
-      <div className="flex flex-col items-center justify-center h-[60vh] gap-8">
-        <motion.div
-          animate={{ rotate: 360 }}
-          transition={{ repeat: Infinity, duration: 2, ease: "linear" }}
-          className="w-16 h-16 border-4 border-primary border-t-accent rounded-full"
-        />
-        <div className="text-center">
-          <h2 className="headline-lg animate-pulse mb-2">AI is typing...</h2>
-          <p className="body-md text-on-surface/70">Synthesizing context and drafting your post.</p>
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div className="max-w-3xl mx-auto">
-      <h1 className="headline-display mb-2">Generate Post</h1>
-      <p className="body-lg text-on-surface/80 mb-8">Feed the AI context to generate a high-quality blog draft.</p>
-      
-      <Card className="p-8 bg-surface">
-        <form onSubmit={handleSubmit} className="flex flex-col gap-6">
-          <Input
-            label="Topic / Prompt"
-            placeholder="e.g. The impact of Agentic AI on SaaS..."
-            value={topic}
-            onChange={(e) => setTopic(e.target.value)}
-          />
-          <Input
-            label="Website URL"
-            type="url"
-            placeholder="https://example.com/article"
-            value={websiteUrl}
-            onChange={(e) => setWebsiteUrl(e.target.value)}
-          />
-          <Input
-            label="YouTube Video URL"
-            type="url"
-            placeholder="https://youtube.com/watch?v=..."
-            value={youtubeUrl}
-            onChange={(e) => setYoutubeUrl(e.target.value)}
-          />
-          <div className="flex flex-col gap-2">
-            <label className="label-md uppercase text-secondary tracking-widest font-semibold">
-              Raw Text Context
-            </label>
+    <div className="max-w-2xl mx-auto py-12 px-4 font-mono text-sm [--tw-accent:theme(colors.warning)]">
+      <Panel title="Generate Post">
+        <form onSubmit={handleSubmit} className="flex flex-col gap-6 mt-2">
+          <Field label="Topic / Prompt">
+            <Input
+              placeholder="e.g. The impact of Agentic AI on SaaS..."
+              value={topic}
+              onChange={(e: any) => setTopic(e.target.value)}
+              disabled={isLoading}
+            />
+          </Field>
+          
+          <Field label="Website URL">
+            <Input
+              type="url"
+              placeholder="https://example.com/article"
+              value={websiteUrl}
+              onChange={(e: any) => setWebsiteUrl(e.target.value)}
+              disabled={isLoading}
+            />
+          </Field>
+          
+          <Field label="YouTube Video URL">
+            <Input
+              type="url"
+              placeholder="https://youtube.com/watch?v=..."
+              value={youtubeUrl}
+              onChange={(e: any) => setYoutubeUrl(e.target.value)}
+              disabled={isLoading}
+            />
+          </Field>
+          
+          <Field label="Raw Text Context">
             <textarea
-              className="input-field min-h-[120px] py-4 resize-y"
+              className="tui-input min-h-[120px] resize-y"
               placeholder="Paste any raw text notes here..."
               value={rawText}
               onChange={(e) => setRawText(e.target.value)}
+              disabled={isLoading}
             />
-          </div>
-          <div className="flex flex-col gap-2">
-            <label className="label-md uppercase text-secondary tracking-widest font-semibold">
-              PDF Upload
+          </Field>
+          
+          <Field label="PDF Upload">
+            <label className={`tui-input flex items-center gap-2 ${isLoading ? 'cursor-not-allowed opacity-50' : 'cursor-pointer hover:border-accent'}`}>
+              <span className="text-secondary">▸ Choose File</span>
+              <span className="text-fg truncate flex-1">{pdfFile ? pdfFile.name : 'No file selected'}</span>
+              <input
+                type="file"
+                accept=".pdf"
+                className="hidden"
+                onChange={(e) => setPdfFile(e.target.files?.[0] || null)}
+                disabled={isLoading}
+              />
             </label>
-            <input
-              type="file"
-              accept=".pdf"
-              className="bg-tertiary border border-muted p-4 rounded-sm text-sm"
-              onChange={(e) => setPdfFile(e.target.files?.[0] || null)}
-            />
+          </Field>
+          
+          {error && <p className="text-danger text-xs uppercase tracking-widest mt-2">Error generating draft. Please try again.</p>}
+          
+          <div className="pt-4 border-t border-border mt-2">
+            <Button 
+              type="submit" 
+              variant="accent" 
+              disabled={isLoading || (!topic && !websiteUrl && !youtubeUrl && !rawText && !pdfFile)}
+              className="w-full"
+            >
+              {isLoading ? (
+                <span className="flex items-center gap-2">
+                  <ThinkingDots />
+                  <span>Generating draft...</span>
+                </span>
+              ) : (
+                'Generate Draft'
+              )}
+            </Button>
           </div>
-          
-          {error && <p className="text-error label-sm">Error generating draft. Please try again.</p>}
-          
-          <Button type="submit" className="mt-4" disabled={!topic && !websiteUrl && !youtubeUrl && !rawText && !pdfFile}>
-            Generate Draft
-          </Button>
         </form>
-      </Card>
+      </Panel>
     </div>
   );
 };

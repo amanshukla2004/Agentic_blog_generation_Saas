@@ -32,10 +32,28 @@ export interface AuthorStat {
   totalViews: number;
 }
 
+export interface AdminBlogSummary {
+  id: string;
+  title: string;
+  slug: string;
+  status: 'DRAFT' | 'PUBLISHED' | 'GENERATING' | 'FAILED';
+  createdAt: string;
+  authorEmail: string;
+  isStaffPick: boolean;
+  viewCount: number;
+}
+
+export interface PaginatedBlogs {
+  content: AdminBlogSummary[];
+  totalPages: number;
+  totalElements: number;
+  number: number;
+}
+
 export const masterApi = createApi({
   reducerPath: 'masterApi',
   baseQuery: baseQuery,
-  tagTypes: ['User', 'SystemErrorLog', 'SystemPrompt', 'AuthorStat'],
+  tagTypes: ['User', 'SystemErrorLog', 'SystemPrompt', 'AuthorStat', 'Blog'],
   endpoints: (builder) => ({
     getUsers: builder.query<User[], void>({
       query: () => '/master/users',
@@ -82,6 +100,25 @@ export const masterApi = createApi({
       query: () => '/master/authors/stats',
       providesTags: ['AuthorStat'],
     }),
+    getAllBlogs: builder.query<PaginatedBlogs, { page: number; size: number }>({
+      query: ({ page, size }) => `/admin/blogs/all-paginated?page=${page}&size=${size}`,
+      providesTags: ['Blog'],
+    }),
+    toggleStaffPick: builder.mutation<void, { id: string; isStaffPick: boolean }>({
+      query: ({ id, isStaffPick }) => ({
+        url: `/admin/blogs/${id}/staff-pick`,
+        method: 'PUT',
+        body: { isStaffPick },
+      }),
+      invalidatesTags: ['Blog'],
+    }),
+    deleteBlog: builder.mutation<void, string>({
+      query: (id) => ({
+        url: `/admin/blogs/${id}`,
+        method: 'DELETE',
+      }),
+      invalidatesTags: ['Blog', 'AuthorStat'],
+    }),
   }),
 });
 
@@ -94,4 +131,7 @@ export const {
   useGetPromptsQuery,
   useUpdatePromptMutation,
   useGetAuthorsStatsQuery,
+  useGetAllBlogsQuery,
+  useToggleStaffPickMutation,
+  useDeleteBlogMutation,
 } = masterApi;

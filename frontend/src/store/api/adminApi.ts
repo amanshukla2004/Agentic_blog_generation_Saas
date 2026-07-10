@@ -18,11 +18,11 @@ export const adminApi = createApi({
       }),
       invalidatesTags: ['AdminBlog'],
     }),
-    publishBlog: builder.mutation<BlogDraft, { id: string; seoDescription: string }>({
-      query: ({ id, seoDescription }) => ({
+    publishBlog: builder.mutation<BlogDraft, { id: string; seoDescription: string; seoKeywords?: string; category?: string }>({
+      query: ({ id, ...body }) => ({
         url: `/admin/blogs/${id}/publish`,
         method: 'PUT',
-        body: { seoDescription },
+        body,
       }),
       invalidatesTags: ['AdminBlog'],
     }),

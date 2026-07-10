@@ -28,10 +28,14 @@ export const userApi = createApi({
       }),
       invalidatesTags: ['UserProfile'],
     }),
+    checkUsername: builder.query<{ available: boolean }, string>({
+      query: (username) => `/auth/check-username?username=${encodeURIComponent(username)}`,
+    }),
   }),
 });
 
 export const {
   useGetProfileQuery,
   useUpdateProfileMutation,
+  useLazyCheckUsernameQuery,
 } = userApi;

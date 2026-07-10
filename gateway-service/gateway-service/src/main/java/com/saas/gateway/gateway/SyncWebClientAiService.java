@@ -137,4 +137,31 @@ public class SyncWebClientAiService implements AiGenerationService {
             throw new ResponseStatusException(HttpStatus.BAD_GATEWAY, "The AI text engine is temporarily unavailable. The incident has been logged for engineering review.");
         }
     }
+
+    @Override
+    public Mono<String> reviseBlog(String currentMarkdown, String instruction) {
+        log.info("Sending revision request to AI microservice");
+        try {
+            java.util.Map<String, String> requestBody = new java.util.HashMap<>();
+            requestBody.put("current_markdown", currentMarkdown);
+            requestBody.put("instruction", instruction);
+
+            java.util.Map responseMap = webClient.post()
+                    .uri("/api/v1/blogs/revise")
+                    .header("X-Internal-Secret", internalSecret)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .bodyValue(requestBody)
+                    .retrieve()
+                    .bodyToMono(java.util.Map.class)
+                    .block();
+
+            String revised = responseMap != null && responseMap.get("revised_markdown") != null 
+                ? responseMap.get("revised_markdown").toString() 
+                : currentMarkdown;
+            return Mono.just(revised);
+        } catch (Exception e) {
+            log.error("AI service revision failed: {}", e.getMessage(), e);
+            throw new ResponseStatusException(HttpStatus.BAD_GATEWAY, "Revision failed.");
+        }
+    }
 }

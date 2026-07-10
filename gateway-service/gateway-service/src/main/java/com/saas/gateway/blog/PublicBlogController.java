@@ -36,17 +36,25 @@ public class PublicBlogController {
             String authorUsername,
             java.util.List<String> tags,
             Integer likesCount,
-            Long viewCount
+            Long viewCount,
+            Boolean isStaffPick
     ) {}
 
     @GetMapping
     @Transactional(readOnly = true)
     public ResponseEntity<Page<PublicBlogSummary>> getPublicBlogs(
+            @RequestParam(required = false) String category,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
         
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
-        Page<BlogDraft> publishedBlogs = blogRepository.findByStatus(Status.PUBLISHED, pageable);
+        Page<BlogDraft> publishedBlogs;
+        
+        if (category != null && !category.isEmpty()) {
+            publishedBlogs = blogRepository.findByCategoryAndStatus(category, Status.PUBLISHED, pageable);
+        } else {
+            publishedBlogs = blogRepository.findByStatus(Status.PUBLISHED, pageable);
+        }
         
         Page<PublicBlogSummary> summaryPage = publishedBlogs.map(blog -> new PublicBlogSummary(
                 blog.getId(),
@@ -60,7 +68,8 @@ public class PublicBlogController {
                 blog.getUser() != null ? blog.getUser().getUsername() : null,
                 blog.getTags(),
                 blog.getLikesCount(),
-                blog.getViewCount()
+                blog.getViewCount(),
+                blog.getIsStaffPick()
         ));
         
         return ResponseEntity.ok(summaryPage);
@@ -69,11 +78,18 @@ public class PublicBlogController {
     @GetMapping("/trending")
     @Transactional(readOnly = true)
     public ResponseEntity<Page<PublicBlogSummary>> getTrendingBlogs(
+            @RequestParam(required = false) String category,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
         
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "viewCount"));
-        Page<BlogDraft> publishedBlogs = blogRepository.findByStatus(Status.PUBLISHED, pageable);
+        Page<BlogDraft> publishedBlogs;
+        
+        if (category != null && !category.isEmpty()) {
+            publishedBlogs = blogRepository.findByCategoryAndStatus(category, Status.PUBLISHED, pageable);
+        } else {
+            publishedBlogs = blogRepository.findByStatus(Status.PUBLISHED, pageable);
+        }
         
         Page<PublicBlogSummary> summaryPage = publishedBlogs.map(blog -> new PublicBlogSummary(
                 blog.getId(),
@@ -87,7 +103,71 @@ public class PublicBlogController {
                 blog.getUser() != null ? blog.getUser().getUsername() : null,
                 blog.getTags(),
                 blog.getLikesCount(),
-                blog.getViewCount()
+                blog.getViewCount(),
+                blog.getIsStaffPick()
+        ));
+        
+        return ResponseEntity.ok(summaryPage);
+    }
+
+    @GetMapping("/top")
+    @Transactional(readOnly = true)
+    public ResponseEntity<Page<PublicBlogSummary>> getTopBlogs(
+            @RequestParam(required = false) String category,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "likesCount", "viewCount"));
+        Page<BlogDraft> publishedBlogs;
+        
+        if (category != null && !category.isEmpty()) {
+            publishedBlogs = blogRepository.findByCategoryAndStatus(category, Status.PUBLISHED, pageable);
+        } else {
+            publishedBlogs = blogRepository.findByStatus(Status.PUBLISHED, pageable);
+        }
+        
+        Page<PublicBlogSummary> summaryPage = publishedBlogs.map(blog -> new PublicBlogSummary(
+                blog.getId(),
+                blog.getTopic(),
+                blog.getTitle(),
+                blog.getSlug(),
+                blog.getSeoDescription(),
+                blog.getCategory(),
+                blog.getCreatedAt(),
+                blog.getUser() != null ? blog.getUser().getEmail() : "Unknown Author",
+                blog.getUser() != null ? blog.getUser().getUsername() : null,
+                blog.getTags(),
+                blog.getLikesCount(),
+                blog.getViewCount(),
+                blog.getIsStaffPick()
+        ));
+        
+        return ResponseEntity.ok(summaryPage);
+    }
+
+    @GetMapping("/staff-picks")
+    @Transactional(readOnly = true)
+    public ResponseEntity<Page<PublicBlogSummary>> getStaffPicks(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "5") int size) {
+        
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
+        Page<BlogDraft> staffPicks = blogRepository.findByIsStaffPickTrueAndStatus(Status.PUBLISHED, pageable);
+        
+        Page<PublicBlogSummary> summaryPage = staffPicks.map(blog -> new PublicBlogSummary(
+                blog.getId(),
+                blog.getTopic(),
+                blog.getTitle(),
+                blog.getSlug(),
+                blog.getSeoDescription(),
+                blog.getCategory(),
+                blog.getCreatedAt(),
+                blog.getUser() != null ? blog.getUser().getEmail() : "Unknown Author",
+                blog.getUser() != null ? blog.getUser().getUsername() : null,
+                blog.getTags(),
+                blog.getLikesCount(),
+                blog.getViewCount(),
+                blog.getIsStaffPick()
         ));
         
         return ResponseEntity.ok(summaryPage);
