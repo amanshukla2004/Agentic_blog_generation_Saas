@@ -25,10 +25,9 @@ def verify_internal_secret(x_internal_secret: str = Header(...)):
     Security Bouncer: Validates that incoming requests have the correct internal secret.
     This prevents external users from directly hitting this unauthenticated worker.
     """
-    if settings.ENV != "development":
-        if x_internal_secret != settings.INTERNAL_GATEWAY_SECRET:
-            logger.warning("Rejected request due to invalid internal gateway secret")
-            raise HTTPException(status_code=403, detail="Forbidden: Invalid internal gateway secret")
+    if x_internal_secret != settings.INTERNAL_GATEWAY_SECRET:
+        logger.warning("Rejected request due to invalid internal gateway secret")
+        raise HTTPException(status_code=403, detail="Forbidden: Invalid internal gateway secret")
     logger.info("Successfully validated internal gateway secret")
     return x_internal_secret
 

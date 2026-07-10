@@ -1,15 +1,44 @@
 import requests
 import logging
 from bs4 import BeautifulSoup
+import socket
+import ipaddress
+from urllib.parse import urlparse
 
 logger = logging.getLogger(__name__)
+
+def is_safe_url(url: str) -> bool:
+    try:
+        parsed = urlparse(url)
+        if parsed.scheme not in ["http", "https"]:
+            return False
+            
+        hostname = parsed.hostname
+        if not hostname:
+            return False
+            
+        ip_addr = socket.gethostbyname(hostname)
+        ip = ipaddress.ip_address(ip_addr)
+        
+        if ip.is_private or ip.is_loopback or ip.is_link_local or ip.is_multicast:
+            return False
+            
+        return True
+    except Exception as e:
+        logger.warning(f"URL safety check failed: {str(e)}")
+        return False
 
 def extract_text_from_url(url: str) -> str:
     """
     Fetches a webpage and extracts clean, readable text by stripping out HTML tags, 
-    scripts, and styles.
+    scripts, and styles. Includes SSRF protection.
     """
     logger.info(f"Starting web scraping for URL: {url}")
+    
+    if not is_safe_url(url):
+        logger.warning(f"Blocked SSRF attempt or invalid URL: {url}")
+        return "ERROR: Unsafe or invalid URL provided. Internal or private IP addresses are blocked."
+        
     try:
         # Provide a common user agent to prevent basic blocking
         headers = {

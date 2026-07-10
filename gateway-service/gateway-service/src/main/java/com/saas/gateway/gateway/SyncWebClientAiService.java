@@ -87,7 +87,8 @@ public class SyncWebClientAiService implements AiGenerationService {
                         .orElse(6);
             }
 
-            if (user.getGenerationsCount() >= limit) {
+            int updatedRows = userRepository.incrementQuota(userId, limit);
+            if (updatedRows == 0) {
                 log.warn("User {} exceeded generation limit of {}", userId, limit);
                 throw new ResponseStatusException(HttpStatus.TOO_MANY_REQUESTS, "Draft generation limit exceeded (" + limit + ").");
             }
@@ -142,13 +143,14 @@ public class SyncWebClientAiService implements AiGenerationService {
             draft.setStatus(Status.DRAFT);
             BlogDraft savedDraft = blogRepository.save(draft);
 
-            user.setGenerationsCount(user.getGenerationsCount() + 1);
-            userRepository.save(user);
-
-            log.info("Successfully persisted new blog draft with ID: {} and incremented user generation count", savedDraft.getId());
+            log.info("Successfully persisted new blog draft with ID: {}", savedDraft.getId());
             return Mono.just(savedDraft);
 
         } catch (Exception e) {
+            if (user.getRole() != Role.MASTER_ADMIN) {
+                userRepository.decrementQuota(userId);
+                log.info("Refunded quota for user ID {} due to generation failure", userId);
+            }
             log.error("AI service invocation failed or returned an error: {}", e.getMessage(), e);
             SystemErrorLog errorLog = new SystemErrorLog("/api/v1/blogs/generate-multimodal", e.getMessage());
             systemErrorLogRepository.save(errorLog);

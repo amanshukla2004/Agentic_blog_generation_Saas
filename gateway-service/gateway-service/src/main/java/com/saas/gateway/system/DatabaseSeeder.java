@@ -40,7 +40,7 @@ public class DatabaseSeeder implements CommandLineRunner {
         String promptName = "TECH_BLOG_PROMPT";
         Optional<SystemPrompt> existingPrompt = systemPromptRepository.findByPromptName(promptName);
 
-        if (existingPrompt.isEmpty() || true) { // TEMPORARY OVERRIDE TO UPDATE PROMPT
+        if (existingPrompt.isEmpty()) {
             String defaultPromptText = """
                 You are an expert Lead Backend Engineer and AI Architect writing an engaging blog post. 
                 Given the provided context, generate a comprehensive blog post in markdown format. Adapt your tone and structure based on whether the topic is technical/coding-related or general/non-technical.
