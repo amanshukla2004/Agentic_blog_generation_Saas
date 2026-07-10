@@ -107,6 +107,11 @@ export const MasterDashboard: React.FC = () => {
     alert(`${key} updated successfully`);
   };
 
+  const handleUpdateTextSetting = async (key: string, value: string) => {
+    await updateSetting({ key, settingValue: value });
+    alert(`${key} updated successfully`);
+  };
+
   const userColumns = ["Email", "Role", "Generations", "Status", "Actions"];
   const authorColumns = ["Email", "Username", "Published Blogs", "Total Views"];
   const blogColumns = ["Title", "Author", "Status", "Views", "Created At", "Actions"];
@@ -390,7 +395,7 @@ export const MasterDashboard: React.FC = () => {
                       />
                     </Field>
                   </div>
-                  <Button variant={maintenanceMode === 'true' ? 'danger' : 'accent'} onClick={() => handleUpdateLimit('MAINTENANCE_MODE', maintenanceMode)}>
+                  <Button variant={maintenanceMode === 'true' ? 'danger' : 'accent'} onClick={() => handleUpdateTextSetting('MAINTENANCE_MODE', maintenanceMode)}>
                     Update
                   </Button>
                 </div>
@@ -406,7 +411,7 @@ export const MasterDashboard: React.FC = () => {
                       />
                     </Field>
                   </div>
-                  <Button variant="accent" onClick={() => handleUpdateLimit('SYSTEM_ANNOUNCEMENT_TEXT', systemAnnouncement)}>
+                  <Button variant="accent" onClick={() => handleUpdateTextSetting('SYSTEM_ANNOUNCEMENT_TEXT', systemAnnouncement)}>
                     Update
                   </Button>
                 </div>
