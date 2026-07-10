@@ -1,9 +1,12 @@
 # 🛡️ Core API Gateway (Spring Boot)
 
-![Java Version](https://img.shields.io/badge/Java-17%2B-ED8B00?logo=java)
-![Spring Boot](https://img.shields.io/badge/Spring%2BBoot-3.x-6DB33F?logo=spring)
-![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15%2B-336791?logo=postgresql)
-![License](https://img.shields.io/badge/license-MIT-green.svg)
+<p align="center">
+  <img src="https://img.shields.io/badge/Java-17%2B-ED8B00?logo=java" alt="Java Version" />
+  <img src="https://img.shields.io/badge/Spring%2BBoot-3.x-6DB33F?logo=spring" alt="Spring Boot" />
+  <img src="https://img.shields.io/badge/PostgreSQL-15%2B-336791?logo=postgresql" alt="PostgreSQL" />
+  <img src="https://img.shields.io/badge/Spring%20Security-6.x-6DB33F?logo=springsecurity" alt="Spring Security" />
+  <img src="https://img.shields.io/badge/license-MIT-green.svg" alt="License" />
+</p>
 
 This service is the central nervous system of the Agentic Blogging SaaS platform. It manages robust JWT-based authentication with Role-Based Access Control (RBAC), persists user and blog data to PostgreSQL, and securely routes heavy multi-modal generation requests to the internal Python AI microservice.
 

@@ -1,8 +1,11 @@
 # 🧠 AI Generation Service (FastAPI)
 
-![Python Version](https://img.shields.io/badge/python-3.10%2B-blue.svg)
-![FastAPI](https://img.shields.io/badge/FastAPI-0.100%2B-009688.svg?logo=fastapi)
-![License](https://img.shields.io/badge/license-MIT-green.svg)
+<p align="center">
+  <img src="https://img.shields.io/badge/python-3.10%2B-blue.svg" alt="Python Version" />
+  <img src="https://img.shields.io/badge/FastAPI-0.100%2B-009688.svg?logo=fastapi" alt="FastAPI" />
+  <img src="https://img.shields.io/badge/LangGraph-0.0.1%2B-FF9900.svg" alt="LangGraph" />
+  <img src="https://img.shields.io/badge/license-MIT-green.svg" alt="License" />
+</p>
 
 This microservice acts as the core AI engine for the Agentic Blog Generation SaaS. Sitting securely behind the Spring Boot API Gateway, it processes multi-modal inputs (Text, YouTube URLs, Website URLs, PDF files), orchestrates context extraction, and utilizes the Groq LLM to generate highly structured, markdown-formatted technical blog posts complete with Mermaid diagrams.
 
