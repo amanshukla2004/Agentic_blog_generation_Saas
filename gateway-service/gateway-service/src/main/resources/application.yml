@@ -1,0 +1,36 @@
+spring:
+  application:
+    name: gateway-service
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/blog_saas_db}
+    username: ${DB_USERNAME:postgres}
+    password: ${DB_PASSWORD:password}
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+    show-sql: true
+
+server:
+  port: 8080
+
+app:
+  security:
+    jwt:
+      secret: ${JWT_SECRET:404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970} # 256-bit Hex Key for HS256
+      expiration-ms: 86400000 # 24 hours
+    internal-secret: ${INTERNAL_SECRET:my-super-secret-internal-key-for-ai-worker}
+    master:
+      email: ${MASTER_ADMIN_EMAIL:master@admin.com}
+      password: ${MASTER_ADMIN_PASSWORD:supersecretmasterpassword}
+
+ai-service:
+  base-url: http://127.0.0.1:8000
+
+logging:
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level [GATEWAY-SERVICE] [%F:%M] - %msg%n"

@@ -51,7 +51,6 @@ HELP.md
 .factorypath
 .springBeans
 .sts4-cache
-application.yml
 
 # Node / Frontend
 node_modules/
@@ -66,20 +65,23 @@ frontend_requirements.md
 ai-service/agent_context.md
 ai-service/ai_prompt.txt
 ai-service/system_prompt.txt
-ai-service/mistakes.log
-ai-service/mistakes2.log
-
 gateway-service/gate-way_prompt.txt
 gateway-service/gateway_context.md
-
-# Prompts
-prompts/
-
-.agents*
 
 # Scratch / Test files
 walkth.txt
 TestDB.java
+TestDB.class
 test.js
 test.py
 test2.js
+ai-service/test.py
+ai-service/mistakes.log
+ai-service/mistakes2.log
+gateway-service/gateway-service/TestDB.class
+gateway-service/gateway-service/TestDB.java
+gateway-service/gateway-service/test.js
+gateway-service/gateway-service/test.py
+gateway-service/gateway-service/test2.js
+DEPLOYMENT_GUIDE.md
+.agents/
