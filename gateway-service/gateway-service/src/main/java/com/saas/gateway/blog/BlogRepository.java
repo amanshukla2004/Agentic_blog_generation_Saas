@@ -18,4 +18,7 @@ public interface BlogRepository extends JpaRepository<BlogDraft, UUID> {
     
     // For Tier 1: User Dashboard
     List<BlogDraft> findByUserId(UUID userId);
+    Optional<BlogDraft> findByIdAndUserId(UUID id, UUID userId);
+    
+    long countByStatus(Status status);
 }

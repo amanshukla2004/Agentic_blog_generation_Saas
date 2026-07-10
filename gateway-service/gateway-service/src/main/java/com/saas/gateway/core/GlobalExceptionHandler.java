@@ -5,12 +5,21 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.server.ResponseStatusException;
+import jakarta.servlet.http.HttpServletRequest;
+import com.saas.gateway.system.SystemErrorLog;
+import com.saas.gateway.system.SystemErrorLogRepository;
 
 import java.time.Instant;
 import java.util.Map;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+
+    private final SystemErrorLogRepository systemErrorLogRepository;
+
+    public GlobalExceptionHandler(SystemErrorLogRepository systemErrorLogRepository) {
+        this.systemErrorLogRepository = systemErrorLogRepository;
+    }
 
     @ExceptionHandler(ResponseStatusException.class)
     public ResponseEntity<Map<String, Object>> handleResponseStatusException(ResponseStatusException ex) {
@@ -22,11 +31,23 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<Map<String, Object>> handleGeneralException(Exception ex) {
+    public ResponseEntity<Map<String, Object>> handleGeneralException(Exception ex, HttpServletRequest request) {
+        // Record the exact endpoint and error in the Master Admin logs
+        String endpoint = request.getRequestURI();
+        String errorMessage = ex.getMessage() != null ? ex.getMessage() : ex.toString();
+        
+        try {
+            SystemErrorLog errorLog = new SystemErrorLog(endpoint, errorMessage);
+            systemErrorLogRepository.save(errorLog);
+        } catch (Exception logEx) {
+            // Failsafe in case DB itself is down and we can't log
+        }
+
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of(
                 "timestamp", Instant.now(),
                 "status", 500,
-                "error", "An unexpected system error occurred."
+                "error", "An unexpected system error occurred.",
+                "details", errorMessage
         ));
     }
 }

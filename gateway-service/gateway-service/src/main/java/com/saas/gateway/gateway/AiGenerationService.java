@@ -1,7 +1,7 @@
 package com.saas.gateway.gateway;
 
 import com.saas.gateway.blog.BlogDraft;
-import org.springframework.http.codec.multipart.FilePart;
+import org.springframework.web.multipart.MultipartFile;
 import reactor.core.publisher.Mono;
 
 import java.util.UUID;
@@ -13,6 +13,6 @@ public interface AiGenerationService {
             String websiteUrl,
             String youtubeUrl,
             String rawText,
-            FilePart pdfFile
+            MultipartFile pdfFile
     );
 }

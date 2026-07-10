@@ -17,6 +17,12 @@ public class User {
     @Column(name = "password_hash", nullable = false)
     private String passwordHash;
 
+    @Column(name = "username")
+    private String username;
+
+    @Column(name = "bio", length = 500)
+    private String bio;
+
     @Column(name = "generations_count", nullable = false)
     private Integer generationsCount = 0;
 
@@ -60,4 +66,10 @@ public class User {
 
     public Role getRole() { return role; }
     public void setRole(Role role) { this.role = role; }
+
+    public String getUsername() { return username; }
+    public void setUsername(String username) { this.username = username; }
+
+    public String getBio() { return bio; }
+    public void setBio(String bio) { this.bio = bio; }
 }

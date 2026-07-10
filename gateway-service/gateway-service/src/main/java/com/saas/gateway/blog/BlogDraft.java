@@ -32,6 +32,23 @@ public class BlogDraft {
     @Column(name = "seo_description")
     private String seoDescription;
 
+    @Column(name = "seo_keywords")
+    private String seoKeywords;
+
+    @Column(name = "category")
+    private String category;
+
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "blog_tags", joinColumns = @JoinColumn(name = "blog_id"))
+    @Column(name = "tag")
+    private java.util.List<String> tags = new java.util.ArrayList<>();
+
+    @Column(name = "likes_count")
+    private Integer likesCount = 0;
+
+    @Column(name = "view_count")
+    private Long viewCount = 0L;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private Status status = Status.DRAFT;
@@ -64,9 +81,24 @@ public class BlogDraft {
     public String getSeoDescription() { return seoDescription; }
     public void setSeoDescription(String seoDescription) { this.seoDescription = seoDescription; }
 
+    public String getSeoKeywords() { return seoKeywords; }
+    public void setSeoKeywords(String seoKeywords) { this.seoKeywords = seoKeywords; }
+
+    public String getCategory() { return category; }
+    public void setCategory(String category) { this.category = category; }
+
     public Status getStatus() { return status; }
     public void setStatus(Status status) { this.status = status; }
 
     public Instant getCreatedAt() { return createdAt; }
     public void setCreatedAt(Instant createdAt) { this.createdAt = createdAt; }
+
+    public java.util.List<String> getTags() { return tags; }
+    public void setTags(java.util.List<String> tags) { this.tags = tags; }
+
+    public Integer getLikesCount() { return likesCount; }
+    public void setLikesCount(Integer likesCount) { this.likesCount = likesCount; }
+
+    public Long getViewCount() { return viewCount; }
+    public void setViewCount(Long viewCount) { this.viewCount = viewCount; }
 }

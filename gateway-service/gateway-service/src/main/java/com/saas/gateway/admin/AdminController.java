@@ -2,11 +2,14 @@ package com.saas.gateway.admin;
 
 import com.saas.gateway.blog.BlogDraft;
 import com.saas.gateway.blog.BlogRepository;
+import com.saas.gateway.blog.BlogResponseDTO;
 import com.saas.gateway.blog.Status;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import org.springframework.transaction.annotation.Transactional;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -20,10 +23,32 @@ public class AdminController {
         this.blogRepository = blogRepository;
     }
 
+    @GetMapping
+    @PreAuthorize("hasAnyRole('ADMIN', 'MASTER_ADMIN')")
+    @Transactional(readOnly = true)
+    public ResponseEntity<List<BlogResponseDTO>> getAllBlogs() {
+        List<BlogResponseDTO> dtos = blogRepository.findAll().stream()
+                .map(BlogResponseDTO::fromEntity)
+                .toList();
+        return ResponseEntity.ok(dtos);
+    }
+
+    @DeleteMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MASTER_ADMIN')")
+    public ResponseEntity<Void> deleteBlog(@PathVariable UUID id) {
+        if (!blogRepository.existsById(id)) {
+            return ResponseEntity.notFound().build();
+        }
+        blogRepository.deleteById(id);
+        return ResponseEntity.noContent().build();
+    }
+
     @PutMapping("/{id}/publish")
     @PreAuthorize("hasAnyRole('ADMIN', 'MASTER_ADMIN')")
-    public ResponseEntity<BlogDraft> publishBlog(@PathVariable UUID id, @RequestBody Map<String, String> body) {
+    public ResponseEntity<BlogResponseDTO> publishBlog(@PathVariable UUID id, @RequestBody Map<String, String> body) {
         String customSeo = body.get("seoDescription");
+        String category = body.get("category");
+        String seoKeywords = body.get("seoKeywords");
 
         return blogRepository.findById(id).map(blog -> {
             blog.setStatus(Status.PUBLISHED);
@@ -35,8 +60,14 @@ public class AdminController {
             if (customSeo != null && !customSeo.isBlank()) {
                 blog.setSeoDescription(customSeo);
             }
+            if (category != null && !category.isBlank()) {
+                blog.setCategory(category);
+            }
+            if (seoKeywords != null && !seoKeywords.isBlank()) {
+                blog.setSeoKeywords(seoKeywords);
+            }
 
-            return ResponseEntity.ok(blogRepository.save(blog));
+            return ResponseEntity.ok(BlogResponseDTO.fromEntity(blogRepository.save(blog)));
         }).orElse(ResponseEntity.notFound().build());
     }
 }

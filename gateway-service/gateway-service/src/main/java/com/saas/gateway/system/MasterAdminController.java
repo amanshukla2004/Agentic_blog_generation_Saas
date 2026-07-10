@@ -50,10 +50,32 @@ public class MasterAdminController {
         }).orElse(ResponseEntity.notFound().build());
     }
 
+    @PostMapping("/users/{id}/toggle-admin")
+    @PreAuthorize("hasRole('MASTER_ADMIN')")
+    public ResponseEntity<User> toggleUserAdmin(@PathVariable UUID id) {
+        return userRepository.findById(id).map(user -> {
+            if (user.getRole() == com.saas.gateway.user.Role.MASTER_ADMIN) {
+                return ResponseEntity.badRequest().body(user); // Can't toggle master admin
+            }
+            if (user.getRole() == com.saas.gateway.user.Role.ADMIN) {
+                user.setRole(com.saas.gateway.user.Role.USER);
+            } else {
+                user.setRole(com.saas.gateway.user.Role.ADMIN);
+            }
+            return ResponseEntity.ok(userRepository.save(user));
+        }).orElse(ResponseEntity.notFound().build());
+    }
+
     @GetMapping("/errors")
     @PreAuthorize("hasRole('MASTER_ADMIN')")
     public ResponseEntity<List<SystemErrorLog>> getSystemErrors() {
         return ResponseEntity.ok(systemErrorLogRepository.findAll());
+    }
+
+    @GetMapping("/prompts")
+    @PreAuthorize("hasRole('MASTER_ADMIN')")
+    public ResponseEntity<List<SystemPrompt>> getSystemPrompts() {
+        return ResponseEntity.ok(systemPromptRepository.findAll());
     }
 
     @PutMapping("/prompts/{name}")
@@ -68,5 +90,11 @@ public class MasterAdminController {
             prompt.setPromptText(newPromptText);
             return ResponseEntity.ok(systemPromptRepository.save(prompt));
         }).orElse(ResponseEntity.notFound().build());
+    }
+
+    @GetMapping("/authors/stats")
+    @PreAuthorize("hasRole('MASTER_ADMIN')")
+    public ResponseEntity<List<AuthorStat>> getAuthorsStats() {
+        return ResponseEntity.ok(userRepository.getAuthorsStats());
     }
 }

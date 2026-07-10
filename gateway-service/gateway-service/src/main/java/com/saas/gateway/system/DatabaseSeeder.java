@@ -4,13 +4,32 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 import java.util.Optional;
 
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import com.saas.gateway.user.User;
+import com.saas.gateway.user.UserRepository;
+import com.saas.gateway.user.Role;
+import com.saas.gateway.user.SubscriptionTier;
+
 @Component
 public class DatabaseSeeder implements CommandLineRunner {
 
     private final SystemPromptRepository systemPromptRepository;
+    private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
+    
+    @Value("${app.security.master.email:master@admin.com}")
+    private String masterEmail;
+    
+    @Value("${app.security.master.password:supersecretmasterpassword}")
+    private String masterPassword;
 
-    public DatabaseSeeder(SystemPromptRepository systemPromptRepository) {
+    public DatabaseSeeder(SystemPromptRepository systemPromptRepository,
+                          UserRepository userRepository,
+                          PasswordEncoder passwordEncoder) {
         this.systemPromptRepository = systemPromptRepository;
+        this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @Override
@@ -36,6 +55,20 @@ public class DatabaseSeeder implements CommandLineRunner {
             SystemPrompt prompt = new SystemPrompt(promptName, defaultPromptText);
             systemPromptRepository.save(prompt);
             System.out.println("Seeded default TECH_BLOG_PROMPT");
+        }
+
+        // Seed Master Admin User
+        Optional<User> existingMaster = userRepository.findByEmail(masterEmail);
+        if (existingMaster.isEmpty()) {
+            User masterUser = new User();
+            masterUser.setEmail(masterEmail);
+            masterUser.setPasswordHash(passwordEncoder.encode(masterPassword));
+            masterUser.setRole(Role.MASTER_ADMIN);
+            masterUser.setSubscriptionTier(SubscriptionTier.PRO);
+            masterUser.setGenerationsCount(0);
+            masterUser.setIsActive(true);
+            userRepository.save(masterUser);
+            System.out.println("Seeded Master Admin User: " + masterEmail);
         }
     }
 }

@@ -5,6 +5,8 @@ class BlogOutputSchema(BaseModel):
     title: str = Field(description="An engaging, high-intent SEO H1 title.")
     seo_description: str = Field(description="A highly optimized meta description (under 160 characters).")
     tags: List[str] = Field(description="An array of relevant programming language or framework keywords.")
+    seo_keywords: str = Field(description="A comma separated string of SEO keywords to rank on Google.")
+    category: str = Field(description="A category chosen from: Technology, Food blogs, Travel blogs, Health and fitness blogs, Lifestyle blogs, Fashion and beauty blogs, Photography blogs, Personal blogs, DIY craft blogs, Parenting blogs, Music blogs, Business blogs, Art and design blogs, Book and writing blogs, Personal finance blogs, Interior design blogs, Sports blogs, News blogs, Movie blogs, Religion blogs, Political blogs, AI, Engineering.")
     hero_image_keyword: str = Field(description="A 1-2 word clear search term for fetching a cover photo (e.g., 'kubernetes', 'database').")
     markdown_content: str = Field(description="The complete body of the technical blog post in valid Markdown format.")
 

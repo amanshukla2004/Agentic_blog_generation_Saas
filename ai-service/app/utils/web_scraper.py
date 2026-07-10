@@ -1,11 +1,15 @@
 import requests
+import logging
 from bs4 import BeautifulSoup
+
+logger = logging.getLogger(__name__)
 
 def extract_text_from_url(url: str) -> str:
     """
     Fetches a webpage and extracts clean, readable text by stripping out HTML tags, 
     scripts, and styles.
     """
+    logger.info(f"Starting web scraping for URL: {url}")
     try:
         # Provide a common user agent to prevent basic blocking
         headers = {
@@ -28,11 +32,15 @@ def extract_text_from_url(url: str) -> str:
         clean_text = "\n".join(lines)
         
         if not clean_text:
+            logger.warning("Web scraper returned empty text. Page might be JS rendered.")
             return "ERROR: Web scraper returned empty text. The page might be heavily JavaScript-rendered."
             
+        logger.info(f"Successfully scraped and extracted {len(clean_text)} characters of text")
         return clean_text
         
     except requests.exceptions.RequestException as e:
+        logger.error(f"Failed to fetch the website URL: {str(e)}")
         return f"ERROR: Failed to fetch the website URL. {str(e)}"
     except Exception as e:
+        logger.error(f"Web scraping failed: {str(e)}")
         return f"ERROR: Web scraping failed. {str(e)}"

@@ -1,7 +1,11 @@
 import re
+import logging
 from youtube_transcript_api import YouTubeTranscriptApi
 
+logger = logging.getLogger(__name__)
+
 def extract_transcript_from_youtube(url: str) -> str:
+    logger.info(f"Starting YouTube transcript extraction for URL: {url}")
     try:
         # Extract video ID
         video_id = None
@@ -10,6 +14,7 @@ def extract_transcript_from_youtube(url: str) -> str:
             video_id = match.group(1)
         
         if not video_id:
+            logger.warning("Failed to extract video ID from YouTube URL")
             return "ERROR: Malformed YouTube URL."
         
         # Try fetching transcript
@@ -30,6 +35,8 @@ def extract_transcript_from_youtube(url: str) -> str:
             
         transcript_data = transcript.fetch()
         text = " ".join([t.text for t in transcript_data])
+        logger.info(f"Successfully extracted YouTube transcript with length {len(text)}")
         return text
     except Exception as e:
+        logger.error(f"Failed to extract YouTube transcript: {str(e)}")
         return f"ERROR: Failed to extract YouTube transcript. {str(e)}"

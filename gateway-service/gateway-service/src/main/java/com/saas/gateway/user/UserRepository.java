@@ -5,8 +5,17 @@ import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
 import java.util.UUID;
+import java.util.List;
+import org.springframework.data.jpa.repository.Query;
+import com.saas.gateway.system.AuthorStat;
 
 @Repository
 public interface UserRepository extends JpaRepository<User, UUID> {
     Optional<User> findByEmail(String email);
+
+    @Query("SELECT new com.saas.gateway.system.AuthorStat(u.id, u.email, u.username, COUNT(b.id), COALESCE(SUM(b.viewCount), 0)) " +
+           "FROM User u LEFT JOIN BlogDraft b ON u.id = b.user.id AND b.status = 'PUBLISHED' " +
+           "GROUP BY u.id, u.email, u.username " +
+           "ORDER BY COUNT(b.id) DESC")
+    List<AuthorStat> getAuthorsStats();
 }
