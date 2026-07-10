@@ -12,6 +12,7 @@ import { BlogViewer } from './pages/BlogViewer';
 import { Editor } from './pages/Editor';
 import { MasterDashboard } from './pages/MasterDashboard';
 import { AdminDashboard } from './pages/AdminDashboard';
+import { AuthorDashboard } from './pages/AuthorDashboard';
 import { Profile } from './pages/Profile';
 import { AuthorProfile } from './pages/AuthorProfile';
 
@@ -61,6 +62,11 @@ function App() {
           <Route path="admin-dashboard" element={
             <ProtectedRoute>
               <AdminDashboard />
+            </ProtectedRoute>
+          } />
+          <Route path="author-dashboard" element={
+            <ProtectedRoute>
+              <AuthorDashboard />
             </ProtectedRoute>
           } />
           <Route path="profile" element={

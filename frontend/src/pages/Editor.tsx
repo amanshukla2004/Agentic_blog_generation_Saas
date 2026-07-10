@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
-import { useGetUserBlogsQuery, useUpdateBlogMutation, useReviseBlogMutation } from '../store/api/blogApi';
-import { usePublishBlogMutation } from '../store/api/adminApi';
+import { useGetUserBlogsQuery, useUpdateBlogMutation, useReviseBlogMutation, usePublishMyBlogMutation } from '../store/api/blogApi';
+import { useGetProfileQuery } from '../store/api/userApi';
 import { RootState } from '../store';
 import { Button, Panel, Field, Input } from '../components/tui/Primitives';
 import ReactMarkdown from 'react-markdown';
@@ -119,11 +119,11 @@ export const Editor = () => {
   const draft = blogs?.find(b => b.id === id);
   
   const [updateBlog] = useUpdateBlogMutation();
-  const [publishBlog] = usePublishBlogMutation();
+  const [publishMyBlog] = usePublishMyBlogMutation();
   const [reviseBlog] = useReviseBlogMutation();
   
-  const userRole = useSelector((state: RootState) => state.auth.role);
-  const isAdmin = userRole?.includes('ADMIN') || userRole?.includes('MASTER_ADMIN');
+  const { data: profile } = useGetProfileQuery();
+  const isAdmin = profile?.role === 'ADMIN' || profile?.role === 'MASTER_ADMIN';
 
   const [saving, setSaving] = useState(false);
   const [content, setContent] = useState('');
@@ -182,11 +182,16 @@ export const Editor = () => {
 
   const confirmPublish = async (desc: string, keywords: string, cat: string) => {
     if (!isAdmin || !desc.trim() || !cat.trim()) return;
-    await updateBlog({ id: draft.id, rawMarkdown: content, title }).unwrap();
-    await publishBlog({ id: draft.id, seoDescription: desc, seoKeywords: keywords, category: cat });
-    setShowSeoModal(false);
-    alert('Blog published!');
-    navigate('/dashboard');
+    try {
+      await updateBlog({ id: draft.id, rawMarkdown: content, title }).unwrap();
+      await publishMyBlog({ id: draft.id, seoDescription: desc, seoKeywords: keywords, category: cat }).unwrap();
+      setShowSeoModal(false);
+      alert('Blog published!');
+      navigate('/author-dashboard');
+    } catch (e: any) {
+      console.error(e);
+      alert('Failed to publish blog: ' + (e?.data?.message || 'Internal Server Error'));
+    }
   };
 
   return (

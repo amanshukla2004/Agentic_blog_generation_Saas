@@ -24,6 +24,12 @@ export interface SystemPrompt {
   updatedAt: string;
 }
 
+export interface SystemSetting {
+  id: number;
+  settingKey: string;
+  settingValue: string;
+}
+
 export interface AuthorStat {
   userId: string;
   email: string;
@@ -53,7 +59,7 @@ export interface PaginatedBlogs {
 export const masterApi = createApi({
   reducerPath: 'masterApi',
   baseQuery: baseQuery,
-  tagTypes: ['User', 'SystemErrorLog', 'SystemPrompt', 'AuthorStat', 'Blog'],
+  tagTypes: ['User', 'SystemErrorLog', 'SystemPrompt', 'AuthorStat', 'Blog', 'SystemSetting'],
   endpoints: (builder) => ({
     getUsers: builder.query<User[], void>({
       query: () => '/master/users',
@@ -96,6 +102,18 @@ export const masterApi = createApi({
       }),
       invalidatesTags: ['SystemPrompt'],
     }),
+    getSystemSettings: builder.query<SystemSetting[], void>({
+      query: () => '/master/settings',
+      providesTags: ['SystemSetting'],
+    }),
+    updateSetting: builder.mutation<SystemSetting, { key: string; settingValue: string }>({
+      query: ({ key, settingValue }) => ({
+        url: `/master/settings/${key}`,
+        method: 'PUT',
+        body: { settingValue },
+      }),
+      invalidatesTags: ['SystemSetting'],
+    }),
     getAuthorsStats: builder.query<AuthorStat[], void>({
       query: () => '/master/authors/stats',
       providesTags: ['AuthorStat'],
@@ -134,4 +152,6 @@ export const {
   useGetAllBlogsQuery,
   useToggleStaffPickMutation,
   useDeleteBlogMutation,
+  useGetSystemSettingsQuery,
+  useUpdateSettingMutation,
 } = masterApi;

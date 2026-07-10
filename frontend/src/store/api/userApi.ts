@@ -7,7 +7,8 @@ export interface UserProfile {
   username: string | null;
   bio: string | null;
   generationsCount: number;
-  subscriptionTier: string;
+  generationsLimit: number;
+  subscriptionTier: 'FREE' | 'PRO';
   role: string;
 }
 

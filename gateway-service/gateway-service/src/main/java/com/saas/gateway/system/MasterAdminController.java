@@ -17,13 +17,16 @@ public class MasterAdminController {
     private final UserRepository userRepository;
     private final SystemErrorLogRepository systemErrorLogRepository;
     private final SystemPromptRepository systemPromptRepository;
+    private final SystemSettingRepository systemSettingRepository;
 
     public MasterAdminController(UserRepository userRepository, 
                                  SystemErrorLogRepository systemErrorLogRepository,
-                                 SystemPromptRepository systemPromptRepository) {
+                                 SystemPromptRepository systemPromptRepository,
+                                 SystemSettingRepository systemSettingRepository) {
         this.userRepository = userRepository;
         this.systemErrorLogRepository = systemErrorLogRepository;
         this.systemPromptRepository = systemPromptRepository;
+        this.systemSettingRepository = systemSettingRepository;
     }
 
     @GetMapping("/users")
@@ -96,5 +99,28 @@ public class MasterAdminController {
     @PreAuthorize("hasRole('MASTER_ADMIN')")
     public ResponseEntity<List<AuthorStat>> getAuthorsStats() {
         return ResponseEntity.ok(userRepository.getAuthorsStats());
+    }
+
+    @GetMapping("/settings")
+    @PreAuthorize("hasRole('MASTER_ADMIN')")
+    public ResponseEntity<List<SystemSetting>> getSystemSettings() {
+        return ResponseEntity.ok(systemSettingRepository.findAll());
+    }
+
+    @PutMapping("/settings/{key}")
+    @PreAuthorize("hasRole('MASTER_ADMIN')")
+    public ResponseEntity<SystemSetting> updateSetting(@PathVariable String key, @RequestBody Map<String, String> body) {
+        String newValue = body.get("settingValue");
+        if (newValue == null || newValue.isBlank()) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        return systemSettingRepository.findBySettingKey(key).map(setting -> {
+            setting.setSettingValue(newValue);
+            return ResponseEntity.ok(systemSettingRepository.save(setting));
+        }).orElseGet(() -> {
+            SystemSetting newSetting = new SystemSetting(key, newValue);
+            return ResponseEntity.ok(systemSettingRepository.save(newSetting));
+        });
     }
 }

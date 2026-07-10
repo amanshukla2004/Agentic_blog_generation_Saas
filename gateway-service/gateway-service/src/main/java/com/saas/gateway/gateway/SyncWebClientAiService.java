@@ -8,7 +8,9 @@ import com.saas.gateway.system.SystemErrorLog;
 import com.saas.gateway.system.SystemErrorLogRepository;
 import com.saas.gateway.system.SystemPrompt;
 import com.saas.gateway.system.SystemPromptRepository;
+import com.saas.gateway.system.SystemSettingRepository;
 import com.saas.gateway.user.SubscriptionTier;
+import com.saas.gateway.user.Role;
 import com.saas.gateway.user.User;
 import com.saas.gateway.user.UserRepository;
 import org.springframework.beans.factory.annotation.Value;
@@ -34,6 +36,7 @@ public class SyncWebClientAiService implements AiGenerationService {
     private final UserRepository userRepository;
     private final BlogRepository blogRepository;
     private final SystemPromptRepository systemPromptRepository;
+    private final SystemSettingRepository systemSettingRepository;
     private final SystemErrorLogRepository systemErrorLogRepository;
     private final WebClient webClient;
     private final String internalSecret;
@@ -42,6 +45,7 @@ public class SyncWebClientAiService implements AiGenerationService {
             UserRepository userRepository,
             BlogRepository blogRepository,
             SystemPromptRepository systemPromptRepository,
+            SystemSettingRepository systemSettingRepository,
             SystemErrorLogRepository systemErrorLogRepository,
             WebClient.Builder webClientBuilder,
             @Value("${ai-service.base-url}") String baseUrl,
@@ -50,6 +54,7 @@ public class SyncWebClientAiService implements AiGenerationService {
         this.userRepository = userRepository;
         this.blogRepository = blogRepository;
         this.systemPromptRepository = systemPromptRepository;
+        this.systemSettingRepository = systemSettingRepository;
         this.systemErrorLogRepository = systemErrorLogRepository;
         this.webClient = webClientBuilder.baseUrl(baseUrl).build();
         this.internalSecret = internalSecret;
@@ -70,9 +75,22 @@ public class SyncWebClientAiService implements AiGenerationService {
                     return new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User not found");
                 });
 
-        if (user.getSubscriptionTier() == SubscriptionTier.FREE && user.getGenerationsCount() >= 50) {
-            log.warn("User {} exceeded FREE tier quota limit of 50 generations", userId);
-            throw new ResponseStatusException(HttpStatus.TOO_MANY_REQUESTS, "Quota exceeded. Please upgrade to PRO.");
+        if (user.getRole() != Role.MASTER_ADMIN) {
+            int limit = 6; // default normal user limit
+            if (user.getRole() == Role.ADMIN) {
+                limit = systemSettingRepository.findBySettingKey("ADMIN_GENERATION_LIMIT")
+                        .map(s -> Integer.parseInt(s.getSettingValue()))
+                        .orElse(30);
+            } else {
+                limit = systemSettingRepository.findBySettingKey("USER_GENERATION_LIMIT")
+                        .map(s -> Integer.parseInt(s.getSettingValue()))
+                        .orElse(6);
+            }
+
+            if (user.getGenerationsCount() >= limit) {
+                log.warn("User {} exceeded generation limit of {}", userId, limit);
+                throw new ResponseStatusException(HttpStatus.TOO_MANY_REQUESTS, "Draft generation limit exceeded (" + limit + ").");
+            }
         }
 
         // 2. Dynamic Prompt Assembly

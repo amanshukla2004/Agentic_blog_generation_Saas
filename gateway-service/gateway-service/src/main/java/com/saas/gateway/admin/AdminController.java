@@ -24,7 +24,7 @@ public class AdminController {
     }
 
     @GetMapping
-    @PreAuthorize("hasAnyRole('ADMIN', 'MASTER_ADMIN')")
+    @PreAuthorize("hasRole('MASTER_ADMIN')")
     @Transactional(readOnly = true)
     public ResponseEntity<List<BlogResponseDTO>> getAllBlogs() {
         List<BlogResponseDTO> dtos = blogRepository.findAll().stream()
@@ -34,7 +34,7 @@ public class AdminController {
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'MASTER_ADMIN')")
+    @PreAuthorize("hasRole('MASTER_ADMIN')")
     public ResponseEntity<Void> deleteBlog(@PathVariable UUID id) {
         if (!blogRepository.existsById(id)) {
             return ResponseEntity.notFound().build();
@@ -44,7 +44,7 @@ public class AdminController {
     }
 
     @PutMapping("/{id}/publish")
-    @PreAuthorize("hasAnyRole('ADMIN', 'MASTER_ADMIN')")
+    @PreAuthorize("hasRole('MASTER_ADMIN')")
     public ResponseEntity<BlogResponseDTO> publishBlog(@PathVariable UUID id, @RequestBody Map<String, String> body) {
         String customSeo = body.get("seoDescription");
         String category = body.get("category");
@@ -53,8 +53,11 @@ public class AdminController {
         return blogRepository.findById(id).map(blog -> {
             blog.setStatus(Status.PUBLISHED);
             
-            // Generate a URL-friendly slug from the title
-            String slug = blog.getTitle().toLowerCase().replaceAll("[^a-z0-9\\s]", "").replaceAll("\\s+", "-");
+            // Generate a URL-friendly slug from the title to avoid NPE and unique constraint violations
+            String title = blog.getTitle();
+            if (title == null || title.isBlank()) title = "untitled-blog";
+            String baseSlug = title.toLowerCase().replaceAll("[^a-z0-9\\s]", "").replaceAll("\\s+", "-");
+            String slug = baseSlug + "-" + blog.getId().toString().substring(0, 8);
             blog.setSlug(slug);
 
             if (customSeo != null && !customSeo.isBlank()) {

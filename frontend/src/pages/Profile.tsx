@@ -73,11 +73,14 @@ export const Profile = () => {
           </Field>
           
           <div className="pt-6 mt-2 border-t border-border grid grid-cols-2 gap-4">
+            <Field label="Role">
+              <div className="text-accent font-bold uppercase tracking-widest">{profile.role === 'ADMIN' ? 'AUTHOR' : profile.role.replace('_', ' ')}</div>
+            </Field>
             <Field label="Subscription">
               <div className="text-fg uppercase tracking-widest">{profile.subscriptionTier}</div>
             </Field>
             <Field label="Generations">
-              <div className="text-fg uppercase tracking-widest">{profile.generationsCount} / 5</div>
+              <div className="text-fg uppercase tracking-widest">{profile.generationsCount} / {profile.generationsLimit || 6}</div>
             </Field>
           </div>
         </div>

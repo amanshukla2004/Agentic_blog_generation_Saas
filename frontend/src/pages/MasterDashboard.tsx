@@ -11,11 +11,13 @@ import {
   useGetAuthorsStatsQuery,
   useGetAllBlogsQuery,
   useToggleStaffPickMutation,
-  useDeleteBlogMutation
+  useDeleteBlogMutation,
+  useGetSystemSettingsQuery,
+  useUpdateSettingMutation
 } from '../store/api/masterApi';
 import { Button, Table, Tabs, RoleBadge, Progress, StatusBadge, Input, Field } from '../components/tui/Primitives';
 
-type Tab = 'USERS' | 'AUTHORS' | 'BLOGS' | 'LOGS' | 'PROMPTS';
+type Tab = 'USERS' | 'AUTHORS' | 'BLOGS' | 'LOGS' | 'PROMPTS' | 'SETTINGS';
 
 export const MasterDashboard: React.FC = () => {
   const navigate = useNavigate();
@@ -33,15 +35,29 @@ export const MasterDashboard: React.FC = () => {
   const { data: blogsData, isLoading: blogsLoading, refetch: refetchBlogs } = useGetAllBlogsQuery({ page: 0, size: 50 });
   const [toggleStaffPick] = useToggleStaffPickMutation();
   const [deleteBlog] = useDeleteBlogMutation();
+  
+  const { data: settings } = useGetSystemSettingsQuery();
+  const [updateSetting] = useUpdateSettingMutation();
 
   const [promptText, setPromptText] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
+  const [userLimit, setUserLimit] = useState('');
+  const [adminLimit, setAdminLimit] = useState('');
   
   React.useEffect(() => {
     if (prompts && prompts.length > 0) {
       setPromptText(prompts[0].promptText);
     }
   }, [prompts]);
+
+  React.useEffect(() => {
+    if (settings) {
+      const userL = settings.find(s => s.settingKey === 'USER_GENERATION_LIMIT')?.settingValue;
+      const adminL = settings.find(s => s.settingKey === 'ADMIN_GENERATION_LIMIT')?.settingValue;
+      if (userL) setUserLimit(userL);
+      if (adminL) setAdminLimit(adminL);
+    }
+  }, [settings]);
 
   const handleResetQuota = async (id: string) => {
     await resetQuota(id);
@@ -71,6 +87,15 @@ export const MasterDashboard: React.FC = () => {
     alert('Configuration saved successfully.');
   };
 
+  const handleUpdateLimit = async (key: string, value: string) => {
+    if (!value || isNaN(Number(value))) {
+      alert("Please enter a valid number");
+      return;
+    }
+    await updateSetting({ key, settingValue: value });
+    alert(`${key} updated successfully to ${value}`);
+  };
+
   const userColumns = ["Email", "Role", "Generations", "Status", "Actions"];
   const authorColumns = ["Email", "Username", "Published Blogs", "Total Views"];
   const blogColumns = ["Title", "Author", "Status", "Views", "Created At", "Actions"];
@@ -87,16 +112,18 @@ export const MasterDashboard: React.FC = () => {
     }
   };
 
-  const renderUserRow = (user: any) => (
+  const renderUserRow = (user: any) => {
+    const limit = user.role === 'ADMIN' ? Number(adminLimit || 30) : Number(userLimit || 6);
+    return (
     <>
       <td className="px-4 py-3">{user.email}</td>
       <td className="px-4 py-3"><RoleBadge role={user.role} /></td>
       <td className="px-4 py-3 min-w-[120px]">
         <div className="flex justify-between text-[10px] mb-1">
-          <span>{user.generationsCount} / 5</span>
-          {user.generationsCount >= 5 && <span className="text-danger">QUOTA EXCEEDED</span>}
+          <span>{user.generationsCount} / {limit}</span>
+          {user.generationsCount >= limit && <span className="text-danger">QUOTA EXCEEDED</span>}
         </div>
-        <Progress value={user.generationsCount} max={5} />
+        <Progress value={user.generationsCount} max={limit} />
       </td>
       <td className="px-4 py-3">
         <StatusBadge status={user.isActive ? 'SUCCESS' : 'ERROR'}>
@@ -118,6 +145,7 @@ export const MasterDashboard: React.FC = () => {
       </td>
     </>
   );
+  };
 
   const renderAuthorRow = (author: any) => (
     <>
@@ -178,7 +206,7 @@ export const MasterDashboard: React.FC = () => {
       </div>
 
       <Tabs 
-        tabs={['USERS', 'AUTHORS', 'BLOGS', 'LOGS', 'PROMPTS']} 
+        tabs={['USERS', 'AUTHORS', 'BLOGS', 'LOGS', 'PROMPTS', 'SETTINGS']} 
         activeTab={activeTab} 
         onTabChange={(tab: Tab) => setActiveTab(tab)} 
       />
@@ -261,6 +289,49 @@ export const MasterDashboard: React.FC = () => {
             <Button variant="danger" onClick={handleSavePrompt} icon="!">
               Save Configuration
             </Button>
+          </div>
+        )}
+
+        {activeTab === 'SETTINGS' && (
+          <div className="w-full max-w-xl">
+            <div className="bg-surface border border-border p-6 mb-6">
+              <h2 className="text-md font-bold mb-4 uppercase tracking-widest text-fg">Generation Limits</h2>
+              <p className="text-xs text-secondary mb-6">Control how many drafts normal users and authors (publishers) can generate.</p>
+              
+              <div className="space-y-6">
+                <div className="flex gap-4 items-end">
+                  <div className="flex-1">
+                    <Field label="Normal User Limit">
+                      <Input 
+                        type="number" 
+                        value={userLimit} 
+                        onChange={(e: any) => setUserLimit(e.target.value)} 
+                        placeholder="e.g. 6"
+                      />
+                    </Field>
+                  </div>
+                  <Button variant="accent" onClick={() => handleUpdateLimit('USER_GENERATION_LIMIT', userLimit)}>
+                    Update User Limit
+                  </Button>
+                </div>
+
+                <div className="flex gap-4 items-end">
+                  <div className="flex-1">
+                    <Field label="Author / Publisher Limit">
+                      <Input 
+                        type="number" 
+                        value={adminLimit} 
+                        onChange={(e: any) => setAdminLimit(e.target.value)} 
+                        placeholder="e.g. 30"
+                      />
+                    </Field>
+                  </div>
+                  <Button variant="accent" onClick={() => handleUpdateLimit('ADMIN_GENERATION_LIMIT', adminLimit)}>
+                    Update Author Limit
+                  </Button>
+                </div>
+              </div>
+            </div>
           </div>
         )}
       </div>

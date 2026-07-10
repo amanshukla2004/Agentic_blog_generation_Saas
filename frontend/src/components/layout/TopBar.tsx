@@ -2,10 +2,13 @@ import { useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState } from '../../store';
 import { logout } from '../../store/slices/authSlice';
+import { useGetProfileQuery } from '../../store/api/userApi';
 import { TopNav, Button } from '../tui/Primitives';
 
 export const TopBar = () => {
-  const { isAuthenticated, role } = useSelector((state: RootState) => state.auth);
+  const { isAuthenticated, role: tokenRole, email } = useSelector((state: RootState) => state.auth);
+  const { data: profile } = useGetProfileQuery(undefined, { skip: !isAuthenticated });
+  const role = profile?.role || tokenRole;
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
@@ -21,7 +24,6 @@ export const TopBar = () => {
   };
   
   const getProfileInitial = () => {
-    const email = useSelector((state: RootState) => state.auth.email) || '';
     if (email) return email.charAt(0).toUpperCase();
     return 'U';
   };
@@ -29,8 +31,8 @@ export const TopBar = () => {
   const links = isAuthenticated ? [
     { label: 'Dashboard', to: '/dashboard' },
     { label: 'Generate', to: '/generate' },
-    ...(role?.includes('ADMIN') || role?.includes('MASTER_ADMIN') ? [{ label: 'Admin', to: '/admin-dashboard' }] : []),
-    ...(role?.includes('MASTER_ADMIN') ? [{ label: 'Master', to: '/master-dashboard' }] : []),
+    ...(role?.includes('ADMIN') ? [{ label: 'Author Dashboard', to: '/author-dashboard' }] : []),
+    ...(role?.includes('MASTER_ADMIN') ? [{ label: 'Admin', to: '/admin-dashboard' }, { label: 'Master', to: '/master-dashboard' }] : []),
   ] : [];
 
   const rightElement = isAuthenticated ? (

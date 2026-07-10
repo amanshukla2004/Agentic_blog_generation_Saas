@@ -15,6 +15,7 @@ import com.saas.gateway.user.SubscriptionTier;
 public class DatabaseSeeder implements CommandLineRunner {
 
     private final SystemPromptRepository systemPromptRepository;
+    private final SystemSettingRepository systemSettingRepository;
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     
@@ -25,9 +26,11 @@ public class DatabaseSeeder implements CommandLineRunner {
     private String masterPassword;
 
     public DatabaseSeeder(SystemPromptRepository systemPromptRepository,
+                          SystemSettingRepository systemSettingRepository,
                           UserRepository userRepository,
                           PasswordEncoder passwordEncoder) {
         this.systemPromptRepository = systemPromptRepository;
+        this.systemSettingRepository = systemSettingRepository;
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
     }
@@ -64,6 +67,16 @@ public class DatabaseSeeder implements CommandLineRunner {
                 systemPromptRepository.save(prompt);
                 System.out.println("Seeded default TECH_BLOG_PROMPT");
             }
+        }
+
+        // Seed System Settings
+        if (systemSettingRepository.findBySettingKey("USER_GENERATION_LIMIT").isEmpty()) {
+            systemSettingRepository.save(new SystemSetting("USER_GENERATION_LIMIT", "6"));
+            System.out.println("Seeded USER_GENERATION_LIMIT=6");
+        }
+        if (systemSettingRepository.findBySettingKey("ADMIN_GENERATION_LIMIT").isEmpty()) {
+            systemSettingRepository.save(new SystemSetting("ADMIN_GENERATION_LIMIT", "30"));
+            System.out.println("Seeded ADMIN_GENERATION_LIMIT=30");
         }
 
         // Seed Master Admin User

@@ -15,8 +15,9 @@ public interface UserRepository extends JpaRepository<User, UUID> {
     boolean existsByUsername(String username);
 
     @Query("SELECT new com.saas.gateway.system.AuthorStat(u.id, u.email, u.username, COUNT(b.id), COALESCE(SUM(b.viewCount), 0)) " +
-           "FROM User u LEFT JOIN BlogDraft b ON u.id = b.user.id AND b.status = 'PUBLISHED' " +
+           "FROM User u JOIN BlogDraft b ON u.id = b.user.id " +
+           "WHERE b.status = 'PUBLISHED' " +
            "GROUP BY u.id, u.email, u.username " +
-           "ORDER BY COUNT(b.id) DESC")
+           "ORDER BY COUNT(b.id) DESC, SUM(b.viewCount) DESC")
     List<AuthorStat> getAuthorsStats();
 }

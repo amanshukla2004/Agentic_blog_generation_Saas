@@ -176,8 +176,10 @@ export const FeedLayout: React.FC = () => {
                 <li key={author.id} className="group cursor-pointer flex items-center justify-between">
                   <div>
                     <span className="text-xs font-bold text-secondary mb-1 block">0{idx + 1}</span>
-                    <Link to={`/author/${author.username}`}>
-                      <h4 className="text-sm font-bold text-fg leading-tight group-hover:text-accent transition-colors">@{author.username}</h4>
+                    <Link to={`/author/${author.username || author.email?.split('@')[0]}`}>
+                      <h4 className="text-sm font-bold text-fg leading-tight group-hover:text-accent transition-colors">
+                        @{author.username || author.email?.split('@')[0] || 'unknown'}
+                      </h4>
                     </Link>
                   </div>
                   <div className="text-right">

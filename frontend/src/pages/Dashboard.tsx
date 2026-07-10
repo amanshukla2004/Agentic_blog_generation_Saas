@@ -1,10 +1,12 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { useGetUserBlogsQuery, useDeleteBlogMutation } from '../store/api/blogApi';
-import { Button, Panel, StatusBadge } from '../components/tui/Primitives';
+import { useGetProfileQuery } from '../store/api/userApi';
+import { Button, Panel, StatusBadge, Progress } from '../components/tui/Primitives';
 
 export const Dashboard = () => {
   const { data: blogs, isLoading, error, refetch } = useGetUserBlogsQuery();
+  const { data: profile } = useGetProfileQuery();
   const [deleteBlog] = useDeleteBlogMutation();
 
   const handleDelete = async (id: string, e: React.MouseEvent) => {
@@ -22,9 +24,19 @@ export const Dashboard = () => {
           <h1 className="text-xl font-bold text-fg uppercase tracking-widest mb-1">Publisher Dashboard</h1>
           <p className="text-secondary text-xs uppercase tracking-widest">Manage your generated AI drafts</p>
         </div>
-        <Link to="/generate">
-          <Button variant="accent" icon="▸">Generate New Draft</Button>
-        </Link>
+        <div className="flex flex-col items-end gap-2">
+          {profile && (
+            <div className="text-[10px] uppercase tracking-widest flex items-center gap-2">
+              <span className="text-secondary">Generations:</span>
+              <span className={profile.generationsCount >= (profile.generationsLimit || 6) ? "text-danger font-bold" : "text-accent"}>
+                {profile.generationsCount} / {profile.generationsLimit || 6}
+              </span>
+            </div>
+          )}
+          <Link to="/generate">
+            <Button variant="accent" icon="▸">Generate New Draft</Button>
+          </Link>
+        </div>
       </div>
 
       {isLoading ? (

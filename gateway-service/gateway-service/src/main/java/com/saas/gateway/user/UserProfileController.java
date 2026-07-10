@@ -8,14 +8,18 @@ import java.security.Principal;
 import java.util.Map;
 import java.util.UUID;
 
+import com.saas.gateway.system.SystemSettingRepository;
+
 @RestController
 @RequestMapping("/api/v1/profile")
 public class UserProfileController {
 
     private final UserRepository userRepository;
+    private final SystemSettingRepository systemSettingRepository;
 
-    public UserProfileController(UserRepository userRepository) {
+    public UserProfileController(UserRepository userRepository, SystemSettingRepository systemSettingRepository) {
         this.userRepository = userRepository;
+        this.systemSettingRepository = systemSettingRepository;
     }
 
     public record UserProfileResponse(
@@ -24,9 +28,22 @@ public class UserProfileController {
             String username,
             String bio,
             Integer generationsCount,
+            Integer generationsLimit,
             SubscriptionTier subscriptionTier,
             Role role
     ) {}
+
+    private int getLimitForUser(User user) {
+        if (user.getRole() == Role.MASTER_ADMIN) return 999999;
+        if (user.getRole() == Role.ADMIN) {
+            return systemSettingRepository.findBySettingKey("ADMIN_GENERATION_LIMIT")
+                    .map(s -> Integer.parseInt(s.getSettingValue()))
+                    .orElse(30);
+        }
+        return systemSettingRepository.findBySettingKey("USER_GENERATION_LIMIT")
+                .map(s -> Integer.parseInt(s.getSettingValue()))
+                .orElse(6);
+    }
 
     @GetMapping
     @PreAuthorize("hasAnyRole('USER', 'ADMIN', 'MASTER_ADMIN')")
@@ -39,6 +56,7 @@ public class UserProfileController {
                         user.getUsername(),
                         user.getBio(),
                         user.getGenerationsCount(),
+                        getLimitForUser(user),
                         user.getSubscriptionTier(),
                         user.getRole()
                 )
@@ -64,6 +82,7 @@ public class UserProfileController {
                             savedUser.getUsername(),
                             savedUser.getBio(),
                             savedUser.getGenerationsCount(),
+                            getLimitForUser(savedUser),
                             savedUser.getSubscriptionTier(),
                             savedUser.getRole()
                     )

@@ -86,4 +86,36 @@ public class UserBlogController {
             return ResponseEntity.noContent().<Void>build();
         }).orElse(ResponseEntity.notFound().build());
     }
+
+    @PutMapping("/{id}/publish")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MASTER_ADMIN')")
+    public ResponseEntity<BlogResponseDTO> publishBlog(@PathVariable UUID id, @RequestBody Map<String, String> body, Principal principal) {
+        UUID userId = UUID.fromString(principal.getName());
+        return blogRepository.findByIdAndUserId(id, userId).map(blog -> {
+            blog.setStatus(Status.PUBLISHED);
+            
+            // Generate a URL-friendly slug from the title to avoid NPE and unique constraint violations
+            String title = blog.getTitle();
+            if (title == null || title.isBlank()) title = "untitled-blog";
+            String baseSlug = title.toLowerCase().replaceAll("[^a-z0-9\\s]", "").replaceAll("\\s+", "-");
+            String slug = baseSlug + "-" + blog.getId().toString().substring(0, 8);
+            blog.setSlug(slug);
+
+            String customSeo = body.get("seoDescription");
+            String category = body.get("category");
+            String seoKeywords = body.get("seoKeywords");
+
+            if (customSeo != null && !customSeo.isBlank()) {
+                blog.setSeoDescription(customSeo);
+            }
+            if (category != null && !category.isBlank()) {
+                blog.setCategory(category);
+            }
+            if (seoKeywords != null && !seoKeywords.isBlank()) {
+                blog.setSeoKeywords(seoKeywords);
+            }
+
+            return ResponseEntity.ok(BlogResponseDTO.fromEntity(blogRepository.save(blog)));
+        }).orElse(ResponseEntity.notFound().build());
+    }
 }
