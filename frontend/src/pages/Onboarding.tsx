@@ -37,25 +37,27 @@ export const Onboarding: React.FC = () => {
 
   return (
     <div className="flex justify-center items-center min-h-[80vh] px-4 font-mono text-sm [--tw-accent:theme(colors.accent)]">
-      <Card className="w-full max-w-lg p-8 md:p-12 border border-border shadow-sm rounded-xl bg-surface">
-        <div className="text-center mb-12">
-          <h1 className="text-3xl font-bold text-fg mb-4 uppercase tracking-widest">Welcome to AgenticBlog</h1>
+      <div className="w-full max-w-xl">
+        <div className="text-center mb-10">
+          <h1 className="text-4xl font-extrabold text-fg mb-4 tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-accent to-fg">Welcome to blogWho</h1>
           <p className="text-sm text-secondary uppercase tracking-widest">Let's set up your profile before you start writing.</p>
         </div>
+        <Card className="p-8 md:p-10 border border-border shadow-xl rounded-2xl bg-surface/80 backdrop-blur-sm">
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-8">
           <div className="space-y-3">
-            <label className="text-xs uppercase tracking-widest font-bold text-fg">Display Name</label>
+            <label className="text-xs uppercase tracking-widest font-bold text-fg">Display Name <span className="text-danger">*</span></label>
             <Input 
               placeholder="e.g. Jane Doe"
               value={name}
               onChange={(e: any) => setName(e.target.value)}
-              className="w-full"
+              className="w-full bg-bg border-border focus:border-accent"
+              required
             />
           </div>
 
           <div className="space-y-3">
-            <label className="text-xs uppercase tracking-widest font-bold text-fg">Username</label>
+            <label className="text-xs uppercase tracking-widest font-bold text-fg">Username <span className="text-danger">*</span></label>
             <div className="relative flex items-center">
               <span className="absolute left-3 text-secondary font-medium select-none">@</span>
               <input 
@@ -74,13 +76,14 @@ export const Onboarding: React.FC = () => {
           </div>
 
           <div className="space-y-3">
-            <label className="text-xs uppercase tracking-widest font-bold text-fg">Short Bio</label>
+            <label className="text-xs uppercase tracking-widest font-bold text-fg">Short Bio <span className="text-danger">*</span></label>
             <textarea 
               rows={4}
               placeholder="Software Engineer, writer, and tech enthusiast."
               value={bio}
               onChange={(e) => setBio(e.target.value)}
-              className="w-full px-4 py-3 bg-bg border border-border text-fg text-sm focus:outline-none focus:border-accent transition-all resize-none"
+              required
+              className="w-full px-4 py-3 bg-bg border border-border text-fg text-sm rounded-md focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent transition-all resize-none"
             />
           </div>
 
@@ -90,7 +93,8 @@ export const Onboarding: React.FC = () => {
             {isLoading ? 'Saving...' : 'Complete Profile'}
           </Button>
         </form>
-      </Card>
+        </Card>
+      </div>
     </div>
   );
 };

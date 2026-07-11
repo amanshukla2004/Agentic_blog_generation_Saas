@@ -57,7 +57,7 @@ export const Register = () => {
               <button 
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 text-secondary hover:text-fg outline-none"
+                className="absolute right-3 text-secondary hover:text-fg outline-none text-2xl flex items-center h-full"
                 title={showPassword ? "Hide password" : "Show password"}
               >
                 {showPassword ? '◎' : '◉'}

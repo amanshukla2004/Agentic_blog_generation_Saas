@@ -16,7 +16,7 @@ import dev.samstevens.totp.secret.SecretGenerator;
 import dev.samstevens.totp.time.SystemTimeProvider;
 import dev.samstevens.totp.time.TimeProvider;
 import org.springframework.stereotype.Service;
-import org.springframework.util.Base64Utils;
+import java.util.Base64;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -58,7 +58,7 @@ public class TwoFactorAuthService {
         try {
             byte[] imageData = qrGenerator.generate(data);
             String mimeType = qrGenerator.getImageMimeType();
-            return "data:" + mimeType + ";base64," + Base64Utils.encodeToString(imageData);
+            return "data:" + mimeType + ";base64," + Base64.getEncoder().encodeToString(imageData);
         } catch (QrGenerationException e) {
             log.error("Error while generating QR code", e);
             throw new RuntimeException("Could not generate QR code");

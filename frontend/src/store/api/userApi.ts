@@ -10,6 +10,7 @@ export interface UserProfile {
   generationsLimit: number;
   subscriptionTier: 'FREE' | 'PRO';
   role: string;
+  is2faEnabled: boolean;
 }
 
 export const userApi = createApi({
