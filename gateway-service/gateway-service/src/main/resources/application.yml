@@ -17,8 +17,8 @@ spring:
   mail:
     host: ${SMTP_HOST:smtp.gmail.com}
     port: ${SMTP_PORT:587}
-    username: ${SMTP_USERNAME:your-email@gmail.com}
-    password: ${SMTP_PASSWORD:your-app-password}
+    username: ${SMTP_USERNAME}
+    password: ${SMTP_PASSWORD}
     properties:
       mail:
         smtp:
@@ -38,8 +38,8 @@ app:
       expiration-ms: 86400000 # 24 hours
     internal-secret: ${INTERNAL_SECRET:my-super-secret-internal-key-for-ai-worker}
     master:
-      email: ${MASTER_ADMIN_EMAIL:master@admin.com}
-      password: ${MASTER_ADMIN_PASSWORD:supersecretmasterpassword}
+      email: ${MASTER_ADMIN_EMAIL}
+      password: ${MASTER_ADMIN_PASSWORD}
   frontend:
     url: ${FRONTEND_URL:http://localhost:5173}
 

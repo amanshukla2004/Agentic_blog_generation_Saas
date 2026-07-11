@@ -39,7 +39,7 @@ export const Onboarding: React.FC = () => {
     <div className="flex justify-center items-center min-h-[80vh] px-4 font-mono text-sm [--tw-accent:theme(colors.accent)]">
       <div className="w-full max-w-xl">
         <div className="text-center mb-10">
-          <h1 className="text-4xl font-extrabold text-fg mb-4 tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-accent to-fg">Welcome to blogWho</h1>
+          <h1 className="text-4xl font-extrabold text-fg mb-4 tracking-tight bg-clip-text text-transparent bg-sky-500">Welcome to blogWho</h1>
           <p className="text-sm text-secondary uppercase tracking-widest">Let's set up your profile before you start writing.</p>
         </div>
         <Card className="p-8 md:p-10 border border-border shadow-xl rounded-2xl bg-surface/80 backdrop-blur-sm">

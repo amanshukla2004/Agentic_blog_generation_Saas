@@ -68,6 +68,17 @@ ai-service/system_prompt.txt
 gateway-service/gate-way_prompt.txt
 gateway-service/gateway_context.md
 
+# Spring Boot Secrets
+application-local.yml
+application-secret.yml
+
+# .env files
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
 # Scratch / Test files
 walkth.txt
 TestDB.java
