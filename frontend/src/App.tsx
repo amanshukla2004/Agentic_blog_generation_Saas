@@ -4,6 +4,8 @@ import { RootState } from './store';
 import { Layout } from './components/layout/Layout';
 import { Login } from './pages/Login';
 import { Register } from './pages/Register';
+import { ForgotPassword } from './pages/ForgotPassword';
+import { ResetPassword } from './pages/ResetPassword';
 import { Dashboard } from './pages/Dashboard';
 import { Generate } from './pages/Generate';
 import { FeedLayout } from './pages/FeedLayout';
@@ -30,6 +32,8 @@ function App() {
           <Route index element={<FeedLayout />} />
           <Route path="login" element={<Login />} />
           <Route path="register" element={<Register />} />
+          <Route path="forgot-password" element={<ForgotPassword />} />
+          <Route path="reset-password" element={<ResetPassword />} />
           <Route path="blog/:slug" element={<BlogViewer />} />
           <Route path="author/:username" element={<AuthorProfile />} />
           

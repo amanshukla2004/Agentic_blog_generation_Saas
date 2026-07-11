@@ -3,6 +3,7 @@ import { useGetProfileQuery, useUpdateProfileMutation } from '../store/api/userA
 import { useGetMyBookmarksQuery } from '../store/api/blogApi';
 import { Button, Panel, Field, Input } from '../components/tui/Primitives';
 import { Link } from 'react-router-dom';
+import { Setup2FA } from '../components/auth/Setup2FA';
 
 export const Profile = () => {
   const { data: profile, isLoading } = useGetProfileQuery();
@@ -82,6 +83,11 @@ export const Profile = () => {
             <Field label="Generations">
               <div className="text-fg uppercase tracking-widest">{profile.generationsCount} / {profile.generationsLimit || 6}</div>
             </Field>
+          </div>
+          
+          <div className="pt-6 mt-2 border-t border-border">
+            <h3 className="text-sm font-bold text-fg uppercase tracking-widest mb-4">Security</h3>
+            <Setup2FA email={profile.email} is2faEnabled={profile.is2faEnabled} />
           </div>
         </div>
       </Panel>

@@ -20,11 +20,14 @@ public class AuthService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
 
-    public AuthService(AuthenticationManager authenticationManager, TokenProvider tokenProvider, UserRepository userRepository, PasswordEncoder passwordEncoder) {
+    private final TwoFactorAuthService twoFactorAuthService;
+
+    public AuthService(AuthenticationManager authenticationManager, TokenProvider tokenProvider, UserRepository userRepository, PasswordEncoder passwordEncoder, TwoFactorAuthService twoFactorAuthService) {
         this.authenticationManager = authenticationManager;
         this.tokenProvider = tokenProvider;
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
+        this.twoFactorAuthService = twoFactorAuthService;
     }
 
     public AuthResponse authenticate(AuthRequest request) {
@@ -33,12 +36,38 @@ public class AuthService {
                 new UsernamePasswordAuthenticationToken(request.email(), request.password())
         );
 
-        log.info("Authentication successful, fetching user details from database");
         User user = userRepository.findByEmail(request.email()).orElseThrow();
+        
+        if (Boolean.TRUE.equals(user.getIs2faEnabled())) {
+            log.info("User {} has 2FA enabled, prompting for code", request.email());
+            return new AuthResponse(null, true, user.getEmail());
+        }
+
         log.info("Generating JWT token for authenticated user ID: {}", user.getId());
         String token = tokenProvider.createToken(authentication, user.getId());
 
-        return new AuthResponse(token);
+        return new AuthResponse(token, false, user.getEmail());
+    }
+    
+    public AuthResponse authenticate2FA(TwoFactorLoginRequest request) {
+        log.info("Attempting to authenticate user with email and 2FA code: {}", request.email());
+        Authentication authentication = authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(request.email(), request.password())
+        );
+
+        User user = userRepository.findByEmail(request.email()).orElseThrow();
+        
+        if (Boolean.TRUE.equals(user.getIs2faEnabled())) {
+            if (!twoFactorAuthService.isOtpValid(user.getTwoFactorSecret(), request.code())) {
+                log.warn("Invalid 2FA code provided for user {}", request.email());
+                throw new RuntimeException("Invalid 2FA code");
+            }
+        }
+
+        log.info("2FA successful, generating JWT token for user ID: {}", user.getId());
+        String token = tokenProvider.createToken(authentication, user.getId());
+
+        return new AuthResponse(token, false, user.getEmail());
     }
 
     public AuthResponse register(AuthRequest request) {
