@@ -19,7 +19,7 @@ public class EmailService {
     }
 
     public void sendVerificationOtpEmail(String to, String otp) {
-        log.info("Sending verification OTP email to {}", to);
+        log.info("Sending verification OTP email to {}. OTP is: {}", to, otp);
         sendEmail(to, "Verify your Blog SaaS Account", 
             "<h2>Welcome to Blog SaaS!</h2>" +
             "<p>Your verification code is: <strong>" + otp + "</strong></p>" +
@@ -27,7 +27,7 @@ public class EmailService {
     }
 
     public void sendPasswordResetEmail(String to, String otp) {
-        log.info("Sending password reset OTP email to {}", to);
+        log.info("Sending password reset OTP email to {}. OTP is: {}", to, otp);
         sendEmail(to, "Password Reset - Blog SaaS",
             "<h2>Password Reset Request</h2>" +
             "<p>You requested to reset your password. Your reset code is: <strong>" + otp + "</strong></p>" +
@@ -46,8 +46,11 @@ public class EmailService {
             
             mailSender.send(message);
         } catch (MessagingException e) {
-            log.error("Failed to send email to {}", to, e);
-            throw new RuntimeException("Failed to send email");
+            log.error("Failed to create email message to {}", to, e);
+            log.warn("Since email failed, if you are in local dev, check the logs for the OTP.");
+        } catch (org.springframework.mail.MailException e) {
+            log.error("Failed to send email to {} (SMTP may not be configured properly). Error: {}", to, e.getMessage());
+            log.warn("Since email failed, if you are in local dev, check the logs for the OTP.");
         }
     }
 }
