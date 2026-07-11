@@ -41,17 +41,14 @@ public class User {
     @Column(nullable = false)
     private Role role = Role.USER;
 
-    @Column(name = "is_2fa_enabled", nullable = false)
-    private Boolean is2faEnabled = false;
+    @Column(name = "is_verified", nullable = false, columnDefinition = "boolean default false")
+    private Boolean isVerified = false;
 
-    @Column(name = "two_factor_secret")
-    private String twoFactorSecret;
+    @Column(name = "otp")
+    private String otp;
 
-    @Column(name = "reset_password_token")
-    private String resetPasswordToken;
-
-    @Column(name = "reset_password_token_expiry")
-    private LocalDateTime resetPasswordTokenExpiry;
+    @Column(name = "otp_expiry")
+    private LocalDateTime otpExpiry;
 
     // Constructors
     public User() {}
@@ -89,15 +86,12 @@ public class User {
     public String getBio() { return bio; }
     public void setBio(String bio) { this.bio = bio; }
 
-    public Boolean getIs2faEnabled() { return is2faEnabled; }
-    public void setIs2faEnabled(Boolean is2faEnabled) { this.is2faEnabled = is2faEnabled; }
+    public Boolean getIsVerified() { return isVerified; }
+    public void setIsVerified(Boolean isVerified) { this.isVerified = isVerified; }
 
-    public String getTwoFactorSecret() { return twoFactorSecret; }
-    public void setTwoFactorSecret(String twoFactorSecret) { this.twoFactorSecret = twoFactorSecret; }
+    public String getOtp() { return otp; }
+    public void setOtp(String otp) { this.otp = otp; }
 
-    public String getResetPasswordToken() { return resetPasswordToken; }
-    public void setResetPasswordToken(String resetPasswordToken) { this.resetPasswordToken = resetPasswordToken; }
-
-    public LocalDateTime getResetPasswordTokenExpiry() { return resetPasswordTokenExpiry; }
-    public void setResetPasswordTokenExpiry(LocalDateTime resetPasswordTokenExpiry) { this.resetPasswordTokenExpiry = resetPasswordTokenExpiry; }
+    public LocalDateTime getOtpExpiry() { return otpExpiry; }
+    public void setOtpExpiry(LocalDateTime otpExpiry) { this.otpExpiry = otpExpiry; }
 }

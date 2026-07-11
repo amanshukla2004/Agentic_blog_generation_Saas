@@ -10,12 +10,25 @@ export const Register = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [validationError, setValidationError] = useState('');
   const [register, { isLoading, error }] = useRegisterMutation();
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setValidationError('');
+    
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      setValidationError('Invalid email format');
+      return;
+    }
+    if (password.length < 8) {
+      setValidationError('Password must be at least 8 characters');
+      return;
+    }
+
     systemLog('Register.tsx', 'handleSubmit', `User attempting registration with email: ${email}`);
     try {
       const response = await register({ email, password }).unwrap();
@@ -65,6 +78,7 @@ export const Register = () => {
             </div>
           </Field>
           
+          {validationError && <p className="text-danger uppercase tracking-widest text-xs mt-2">{validationError}</p>}
           {error && <p className="text-danger uppercase tracking-widest text-xs mt-2">Failed to register</p>}
           
           <div className="mt-4 flex justify-end">

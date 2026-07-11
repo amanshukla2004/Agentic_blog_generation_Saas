@@ -18,26 +18,35 @@ public class EmailService {
         this.mailSender = mailSender;
     }
 
-    public void sendPasswordResetEmail(String to, String resetUrl) {
-        log.info("Sending password reset email to {}", to);
+    public void sendVerificationOtpEmail(String to, String otp) {
+        log.info("Sending verification OTP email to {}", to);
+        sendEmail(to, "Verify your Blog SaaS Account", 
+            "<h2>Welcome to Blog SaaS!</h2>" +
+            "<p>Your verification code is: <strong>" + otp + "</strong></p>" +
+            "<p>This code is valid for 15 minutes.</p>");
+    }
+
+    public void sendPasswordResetEmail(String to, String otp) {
+        log.info("Sending password reset OTP email to {}", to);
+        sendEmail(to, "Password Reset - Blog SaaS",
+            "<h2>Password Reset Request</h2>" +
+            "<p>You requested to reset your password. Your reset code is: <strong>" + otp + "</strong></p>" +
+            "<p>This code is valid for 15 minutes.</p>" +
+            "<p>If you did not request this, please ignore this email.</p>");
+    }
+
+    private void sendEmail(String to, String subject, String htmlContent) {
         try {
             MimeMessage message = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
             
             helper.setTo(to);
-            helper.setSubject("Password Reset Request - Blog SaaS");
-            
-            String htmlContent = "<h2>Password Reset Request</h2>" +
-                    "<p>You requested to reset your password. Click the link below to set a new password:</p>" +
-                    "<a href=\"" + resetUrl + "\">Reset Password</a>" +
-                    "<p>This link is valid for 15 minutes.</p>" +
-                    "<p>If you did not request this, please ignore this email.</p>";
-                    
+            helper.setSubject(subject);
             helper.setText(htmlContent, true);
+            
             mailSender.send(message);
-            log.info("Password reset email sent successfully to {}", to);
         } catch (MessagingException e) {
-            log.error("Failed to send password reset email to {}", to, e);
+            log.error("Failed to send email to {}", to, e);
             throw new RuntimeException("Failed to send email");
         }
     }

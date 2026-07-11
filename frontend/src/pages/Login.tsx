@@ -12,6 +12,7 @@ export const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [code, setCode] = useState('');
   const [requires2fa, setRequires2fa] = useState(false);
+  const [validationError, setValidationError] = useState('');
   
   const [login, { isLoading: isLoginLoading, error: loginError }] = useLoginMutation();
   const [login2fa, { isLoading: is2faLoading, error: error2fa }] = useLogin2faMutation();
@@ -21,6 +22,18 @@ export const Login = () => {
 
   const handleLoginSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setValidationError('');
+    
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      setValidationError('Invalid email format');
+      return;
+    }
+    if (password.length < 8) {
+      setValidationError('Password must be at least 8 characters');
+      return;
+    }
+
     systemLog('Login.tsx', 'handleSubmit', `User attempting login with email: ${email}`);
     try {
       const response = await login({ email, password }).unwrap();
@@ -92,6 +105,7 @@ export const Login = () => {
               <a href="/forgot-password" className="text-xs text-accent hover:text-fg tracking-widest">Forgot Password?</a>
             </div>
             
+            {validationError && <p className="text-danger uppercase tracking-widest text-xs mt-2">{validationError}</p>}
             {loginError && <p className="text-danger uppercase tracking-widest text-xs mt-2">Invalid credentials</p>}
             
             <div className="mt-4 flex justify-end">

@@ -19,11 +19,10 @@ export const authApi = createApi({
         body: credentials,
       }),
     }),
-    login2fa: builder.mutation({
-      query: (credentials) => ({
-        url: '/auth/login/2fa',
+    verifySignup: builder.mutation({
+      query: ({ email, otp }) => ({
+        url: `/auth/verify-signup?email=${encodeURIComponent(email)}&otp=${encodeURIComponent(otp)}`,
         method: 'POST',
-        body: credentials,
       }),
     }),
     forgotPassword: builder.mutation({
@@ -33,21 +32,16 @@ export const authApi = createApi({
       }),
     }),
     resetPassword: builder.mutation({
-      query: ({ token, newPassword }) => ({
-        url: `/auth/reset-password?token=${encodeURIComponent(token)}&newPassword=${encodeURIComponent(newPassword)}`,
+      query: ({ email, otp, newPassword }) => ({
+        url: `/auth/reset-password?email=${encodeURIComponent(email)}&otp=${encodeURIComponent(otp)}&newPassword=${encodeURIComponent(newPassword)}`,
         method: 'POST',
       }),
     }),
-    generate2fa: builder.mutation({
-      query: (email) => ({
-        url: `/auth/2fa/generate?email=${encodeURIComponent(email)}`,
+    login2fa: builder.mutation({
+      query: (credentials) => ({
+        url: '/auth/login2fa',
         method: 'POST',
-      }),
-    }),
-    enable2fa: builder.mutation({
-      query: ({ email, code }) => ({
-        url: `/auth/2fa/enable?email=${encodeURIComponent(email)}&code=${encodeURIComponent(code)}`,
-        method: 'POST',
+        body: credentials,
       }),
     }),
   }),
@@ -56,9 +50,8 @@ export const authApi = createApi({
 export const { 
   useLoginMutation, 
   useRegisterMutation,
-  useLogin2faMutation,
+  useVerifySignupMutation,
   useForgotPasswordMutation,
   useResetPasswordMutation,
-  useGenerate2faMutation,
-  useEnable2faMutation
+  useLogin2faMutation
 } = authApi;
