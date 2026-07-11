@@ -44,6 +44,19 @@ export const authApi = createApi({
         body: credentials,
       }),
     }),
+    generate2fa: builder.mutation<{qrCodeUri: string}, string>({
+      query: (email) => ({
+        url: `/auth/2fa/generate?email=${encodeURIComponent(email)}`,
+        method: 'POST',
+      }),
+    }),
+    enable2fa: builder.mutation<void, { email: string, code: string }>({
+      query: (body) => ({
+        url: '/auth/2fa/enable',
+        method: 'POST',
+        body,
+      }),
+    }),
   }),
 });
 
@@ -53,5 +66,7 @@ export const {
   useVerifySignupMutation,
   useForgotPasswordMutation,
   useResetPasswordMutation,
-  useLogin2faMutation
+  useLogin2faMutation,
+  useGenerate2faMutation,
+  useEnable2faMutation
 } = authApi;

@@ -11,6 +11,7 @@ export interface UserProfile {
   subscriptionTier: 'FREE' | 'PRO';
   role: string;
   isVerified: boolean;
+  is2faEnabled?: boolean;
 }
 
 export const userApi = createApi({
