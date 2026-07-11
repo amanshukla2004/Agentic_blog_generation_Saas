@@ -32,7 +32,7 @@ def verify_internal_secret(x_internal_secret: str = Header(...)):
     return x_internal_secret
 
 @app.get("/health")
-async def health_check(secret: str = Depends(verify_internal_secret)):
+async def health_check():
     """Simple health check endpoint to verify AI service status."""
     return {"status": "ok", "service": "ai-worker"}
 
