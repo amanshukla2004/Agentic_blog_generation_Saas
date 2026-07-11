@@ -57,7 +57,7 @@ const PublishModal = ({ isOpen, onClose, onPublish, initialSeoDesc, initialKeywo
 
   return (
     <div className="fixed inset-0 bg-bg/90 flex items-center justify-center z-50 p-4">
-      <Panel title="Publish Article" className="max-w-md w-full">
+      <Panel title={initialSeoDesc ? "Update Metadata" : "Publish Article"} className="max-w-md w-full">
         <p className="text-secondary text-xs uppercase tracking-widest mb-6">Review metadata before going live.</p>
         <Field label="SEO Description">
           <textarea
@@ -103,7 +103,9 @@ const PublishModal = ({ isOpen, onClose, onPublish, initialSeoDesc, initialKeywo
         </Field>
         <div className="flex justify-end gap-3 pt-4 border-t border-border mt-4">
           <Button variant="ghost" onClick={onClose}>Cancel</Button>
-          <Button variant="accent" onClick={() => onPublish(seoDescInput, seoKeywordsInput, categoryInput)} disabled={!seoDescInput.trim() || !categoryInput.trim()}>Confirm Publish</Button>
+          <Button variant="accent" onClick={() => onPublish(seoDescInput, seoKeywordsInput, categoryInput)} disabled={!seoDescInput.trim() || !categoryInput.trim()}>
+            {initialSeoDesc ? 'Update' : 'Confirm Publish'}
+          </Button>
         </div>
       </Panel>
     </div>
@@ -186,7 +188,7 @@ export const Editor = () => {
       await updateBlog({ id: draft.id, rawMarkdown: content, title }).unwrap();
       await publishMyBlog({ id: draft.id, seoDescription: desc, seoKeywords: keywords, category: cat }).unwrap();
       setShowSeoModal(false);
-      alert('Blog published!');
+      alert(draft.status === 'PUBLISHED' ? 'Metadata updated!' : 'Blog published!');
       navigate('/author-dashboard');
     } catch (e: any) {
       console.error(e);
@@ -204,9 +206,9 @@ export const Editor = () => {
           <Button variant="ghost" onClick={handleSaveDraft} disabled={saving}>
             {saving ? 'Saving...' : 'Save Draft'}
           </Button>
-          {isAdmin && draft.status === 'DRAFT' && (
+          {isAdmin && (
             <Button variant="accent" onClick={handlePublishClick} icon="▸">
-              Publish
+              {draft.status === 'PUBLISHED' ? 'Update Meta' : 'Publish'}
             </Button>
           )}
         </div>

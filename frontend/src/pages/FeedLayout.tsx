@@ -9,11 +9,12 @@ type FeedTab = 'Latest' | 'Top';
 
 export const FeedLayout: React.FC = () => {
   const [activeTab, setActiveTab] = useState<FeedTab>('Latest');
+  const [currentPage, setCurrentPage] = useState(0);
   const [searchParams, setSearchParams] = useSearchParams();
   const activeCategory = searchParams.get('category');
   
   const { data: latestData, isLoading: latestLoading, error: latestError } = useGetPublicBlogsQuery(
-    { page: 0, size: 20, category: activeCategory || undefined }, 
+    { page: currentPage, size: 15, category: activeCategory || undefined }, 
     { refetchOnMountOrArgChange: true }
   );
   const { data: trendingData, isLoading: trendingLoading, error: trendingError } = useGetTrendingBlogsQuery(
@@ -21,7 +22,7 @@ export const FeedLayout: React.FC = () => {
     { refetchOnMountOrArgChange: true }
   );
   const { data: topData, isLoading: topLoading, error: topError } = useGetTopBlogsQuery(
-    { page: 0, size: 20, category: activeCategory || undefined }, 
+    { page: currentPage, size: 15, category: activeCategory || undefined }, 
     { refetchOnMountOrArgChange: true }
   );
   const { data: staffPicksData } = useGetStaffPicksQuery({ page: 0, size: 5 }, { refetchOnMountOrArgChange: true });
@@ -88,7 +89,10 @@ export const FeedLayout: React.FC = () => {
         <Tabs 
           tabs={['Latest', 'Top']} 
           activeTab={activeTab} 
-          onTabChange={(tab: FeedTab) => setActiveTab(tab)} 
+          onTabChange={(tab: FeedTab) => {
+            setActiveTab(tab);
+            setCurrentPage(0);
+          }} 
           className="mb-5"
         />
 
@@ -128,6 +132,28 @@ export const FeedLayout: React.FC = () => {
           ) : (
             <div className="text-center py-20 text-secondary text-sm uppercase tracking-widest">
               No published articles yet.
+            </div>
+          )}
+
+          {activeData && activeData.totalPages > 1 && (
+            <div className="flex justify-center items-center gap-4 mt-8 pb-8">
+              <button
+                disabled={activeData.number === 0}
+                onClick={() => setCurrentPage(p => p - 1)}
+                className="px-4 py-2 bg-surface text-fg border border-border hover:bg-bg disabled:opacity-50 disabled:cursor-not-allowed uppercase tracking-widest text-xs font-bold transition-colors"
+              >
+                Previous
+              </button>
+              <span className="text-xs text-secondary uppercase tracking-widest">
+                Page {(activeData.number || 0) + 1} of {activeData.totalPages}
+              </span>
+              <button
+                disabled={activeData.number >= (activeData.totalPages - 1)}
+                onClick={() => setCurrentPage(p => p + 1)}
+                className="px-4 py-2 bg-surface text-fg border border-border hover:bg-bg disabled:opacity-50 disabled:cursor-not-allowed uppercase tracking-widest text-xs font-bold transition-colors"
+              >
+                Next
+              </button>
             </div>
           )}
         </div>

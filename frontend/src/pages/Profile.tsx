@@ -47,7 +47,7 @@ export const Profile = () => {
         </div>
         
         <div className="flex flex-col gap-6">
-          <Field label="Username">
+          <Field label="Name / Username">
             {isEditing ? (
               <Input 
                 value={username} 

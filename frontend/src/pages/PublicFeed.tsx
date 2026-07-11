@@ -4,7 +4,8 @@ import { useGetPublicBlogsQuery } from '../store/api/blogApi';
 import { Card } from '../components/ui/Card';
 
 export const PublicFeed = () => {
-  const { data, isLoading, error } = useGetPublicBlogsQuery({ page: 0, size: 20 });
+  const [currentPage, setCurrentPage] = React.useState(0);
+  const { data, isLoading, error } = useGetPublicBlogsQuery({ page: currentPage, size: 15 });
 
   return (
     <div className="flex flex-col gap-12 max-w-5xl mx-auto py-12">
@@ -49,6 +50,28 @@ export const PublicFeed = () => {
       ) : (
         <div className="text-center py-20 text-on-surface/50 headline-md">
           No published articles yet.
+        </div>
+      )}
+
+      {data && data.totalPages > 1 && (
+        <div className="flex justify-center items-center gap-4 mt-8">
+          <button
+            disabled={data.number === 0}
+            onClick={() => setCurrentPage(p => p - 1)}
+            className="px-4 py-2 bg-surface text-fg border border-border hover:bg-bg disabled:opacity-50 disabled:cursor-not-allowed uppercase tracking-widest text-xs font-bold transition-colors"
+          >
+            Previous
+          </button>
+          <span className="text-sm text-secondary uppercase tracking-widest">
+            Page {(data.number || 0) + 1} of {data.totalPages}
+          </span>
+          <button
+            disabled={data.number >= (data.totalPages - 1)}
+            onClick={() => setCurrentPage(p => p + 1)}
+            className="px-4 py-2 bg-surface text-fg border border-border hover:bg-bg disabled:opacity-50 disabled:cursor-not-allowed uppercase tracking-widest text-xs font-bold transition-colors"
+          >
+            Next
+          </button>
         </div>
       )}
     </div>

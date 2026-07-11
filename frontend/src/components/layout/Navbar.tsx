@@ -31,13 +31,13 @@ export const Navbar = () => {
     { label: 'Generate', to: '/generate' },
     { label: 'Profile', to: '/profile' },
     ...(role?.includes('ADMIN') || role?.includes('MASTER_ADMIN') ? [{ label: 'Admin', to: '/admin-dashboard' }] : []),
-    ...(role?.includes('MASTER_ADMIN') ? [{ label: 'Master', to: '/master-dashboard' }] : []),
+    ...(role?.includes('MASTER_ADMIN') ? [{ label: 'Master Control', to: '/master-dashboard' }] : []),
   ] : [];
 
   const rightElement = isAuthenticated ? (
     <div className="flex items-center gap-4">
-      <span className={`w-8 h-8 rounded-full border border-bg ring-1 ${getRoleRingColor()} flex items-center justify-center text-xs bg-surface text-fg uppercase`}>
-        {getRoleInitial()}
+      <span className={`px-3 py-1 font-bold text-sm tracking-widest uppercase border border-border ${getRoleRingColor()} bg-surface text-fg`}>
+        Profile
       </span>
       <Button variant="ghost" onClick={handleLogout}>Log Out</Button>
     </div>
@@ -50,7 +50,7 @@ export const Navbar = () => {
 
   return (
     <TopNav 
-      brand="AgenticBlog"
+      brand="blogWHO"
       links={links}
       right={rightElement}
     />

@@ -32,16 +32,16 @@ export const TopBar = () => {
     { label: 'Dashboard', to: '/dashboard' },
     { label: 'Generate', to: '/generate' },
     ...(role?.includes('ADMIN') ? [{ label: 'Author Dashboard', to: '/author-dashboard' }] : []),
-    ...(role?.includes('MASTER_ADMIN') ? [{ label: 'Admin', to: '/admin-dashboard' }, { label: 'Master', to: '/master-dashboard' }] : []),
+    ...(role?.includes('MASTER_ADMIN') ? [{ label: 'Admin', to: '/admin-dashboard' }, { label: 'Master Control', to: '/master-dashboard' }] : []),
   ] : [];
 
   const rightElement = isAuthenticated ? (
     <div className="flex items-center gap-4">
       <div 
         onClick={() => navigate('/profile')}
-        className={`w-8 h-8 rounded-full border ring-1 ${getRoleRingColor()} flex items-center justify-center text-xs bg-surface uppercase cursor-pointer hover:bg-bg transition-colors`}
+        className={`px-3 py-1 font-bold text-sm tracking-widest uppercase border ${getRoleRingColor()} bg-surface cursor-pointer hover:bg-bg transition-colors`}
       >
-        {getProfileInitial()}
+        Profile
       </div>
       <Button variant="ghost" onClick={handleLogout}>Log Out</Button>
     </div>
@@ -54,7 +54,7 @@ export const TopBar = () => {
 
   return (
     <TopNav 
-      brand="AgenticBlog"
+      brand="blogWHO"
       links={links}
       right={rightElement}
     />

@@ -21,7 +21,7 @@ export const Dashboard = () => {
     <div className="flex flex-col gap-8 w-full max-w-7xl mx-auto px-4 py-8 font-mono text-sm [--tw-accent:theme(colors.warning)]">
       <div className="flex justify-between items-end border-b border-border pb-4 w-full">
         <div>
-          <h1 className="text-xl font-bold text-fg uppercase tracking-widest mb-1">Publisher Dashboard</h1>
+          <h1 className="text-xl font-bold text-fg uppercase tracking-widest mb-1">DashBoard</h1>
           <p className="text-secondary text-xs uppercase tracking-widest">Manage your generated AI drafts</p>
         </div>
         <div className="flex flex-col items-end gap-2">

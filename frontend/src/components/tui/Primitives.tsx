@@ -16,23 +16,69 @@ export const Button = ({ variant = 'ghost', icon, className = '', children, ...p
   );
 };
 
+// MODAL
+export const Modal = ({ isOpen, onClose, title, children }: any) => {
+  if (!isOpen) return null;
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 font-mono text-sm">
+      <div className="bg-bg border border-border w-full max-w-md">
+        <div className="flex justify-between items-center border-b border-border p-4 bg-surface">
+          <h3 className="font-bold text-fg uppercase tracking-widest">{title}</h3>
+          <button onClick={onClose} className="text-secondary hover:text-fg font-bold px-2 py-1">✕</button>
+        </div>
+        <div className="p-6">
+          {children}
+        </div>
+      </div>
+    </div>
+  );
+};
+
 // TOP NAV
 export const TopNav = ({ brand, links, right, className = '' }: any) => {
+  const [isSupportOpen, setIsSupportOpen] = React.useState(false);
+  const supportEmail = import.meta.env.VITE_SUPPORT_EMAIL || 'support@blogwho.com';
+
   return (
     <header className={`border-b border-border bg-bg text-fg px-4 py-3 flex items-center justify-between ${className}`}>
-      <div className="flex items-center gap-6">
-        <Link to="/" className="font-bold tracking-widest uppercase text-fg hover:text-primary transition-colors">
-          {brand}
-        </Link>
+      <div className="flex items-center gap-8">
+        <div className="flex flex-col">
+          <Link to="/" className="font-bold tracking-widest uppercase text-fg hover:text-primary transition-colors text-lg leading-none mb-1">
+            {brand}
+          </Link>
+          <span className="text-[9px] uppercase tracking-widest text-secondary">agentic blogging platform</span>
+        </div>
         <nav className="flex items-center gap-4">
           {links.map((link: any, i: number) => (
             <Link key={i} to={link.to} className="text-secondary hover:text-primary transition-colors text-sm font-bold">
               {link.label}
             </Link>
           ))}
+          <button 
+            onClick={() => setIsSupportOpen(true)}
+            className="text-secondary hover:text-primary transition-colors flex items-center ml-2"
+            title="Support"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M12 2a9 9 0 0 0-9 9v4a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2v-4a2 2 0 0 0-2-2H5a7 7 0 0 1 14 0h-2a2 2 0 0 0-2 2v4a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2v-4a9 9 0 0 0-9-9z"></path>
+              <path d="M19 13v8"></path>
+              <path d="M15 21h4"></path>
+            </svg>
+          </button>
         </nav>
       </div>
       <div>{right}</div>
+
+      <Modal isOpen={isSupportOpen} onClose={() => setIsSupportOpen(false)} title="Support & Feedback">
+        <p className="text-secondary mb-4 leading-relaxed">
+          If you encounter any bug, want to report an issue, or have any suggestions for the platform, please contact us!
+        </p>
+        <div className="bg-surface border border-border p-3 text-center">
+          <a href={`mailto:${supportEmail}`} className="text-accent font-bold hover:underline">
+            {supportEmail}
+          </a>
+        </div>
+      </Modal>
     </header>
   );
 };

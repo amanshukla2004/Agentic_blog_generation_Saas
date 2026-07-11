@@ -22,7 +22,7 @@ export const AdminDashboard = () => {
     navigate(`/draft/${id}`);
   };
 
-  const columns = ["Topic / Title", "Author", "Status", "Created At", "Actions"];
+  const columns = ["Topic / Title", "Author", "Email", "Status", "Created At", "Actions"];
 
   const renderRow = (blog: any) => (
     <>
@@ -31,7 +31,10 @@ export const AdminDashboard = () => {
         <div className="text-secondary uppercase tracking-widest text-[10px]">{blog.topic}</div>
       </td>
       <td className="px-4 py-3 text-secondary tracking-widest uppercase">
-        {blog.authorUsername || blog.authorEmail?.split('@')[0] || "Unknown"}
+        {blog.authorUsername || "Unknown"}
+      </td>
+      <td className="px-4 py-3 text-secondary tracking-widest">
+        {blog.authorEmail || "Unknown"}
       </td>
       <td className="px-4 py-3">
         <StatusBadge status={blog.status}>{blog.status}</StatusBadge>

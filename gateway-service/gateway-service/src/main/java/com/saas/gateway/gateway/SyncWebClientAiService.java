@@ -21,8 +21,11 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 import org.springframework.web.server.ResponseStatusException;
 import reactor.core.publisher.Mono;
+import reactor.util.retry.Retry;
+import java.time.Duration;
 
 import java.util.UUID;
 import org.slf4j.Logger;
@@ -123,7 +126,16 @@ public class SyncWebClientAiService implements AiGenerationService {
                     .body(BodyInserters.fromMultipartData(builder.build()))
                     .retrieve()
                     .bodyToMono(java.util.Map.class)
-                    .block(); // Synchronous block as per requirement
+                    .retryWhen(Retry.fixedDelay(4, Duration.ofSeconds(15))
+                            .filter(throwable -> {
+                                if (throwable instanceof WebClientResponseException) {
+                                    return ((WebClientResponseException) throwable).getStatusCode().is5xxServerError();
+                                }
+                                return true; // Retry on connect exceptions as well
+                            })
+                            .doBeforeRetry(retrySignal -> log.warn("Retrying AI service connection (Render cold start)... attempt {}", retrySignal.totalRetries() + 1))
+                    )
+                    .block(Duration.ofMinutes(5)); // Allow enough time for retries
 
             log.info("Received successful response from AI microservice, parsing blog output");
             // Safe Persistence
@@ -173,7 +185,16 @@ public class SyncWebClientAiService implements AiGenerationService {
                     .bodyValue(requestBody)
                     .retrieve()
                     .bodyToMono(java.util.Map.class)
-                    .block();
+                    .retryWhen(Retry.fixedDelay(4, Duration.ofSeconds(15))
+                            .filter(throwable -> {
+                                if (throwable instanceof WebClientResponseException) {
+                                    return ((WebClientResponseException) throwable).getStatusCode().is5xxServerError();
+                                }
+                                return true;
+                            })
+                            .doBeforeRetry(retrySignal -> log.warn("Retrying AI service connection (Render cold start)... attempt {}", retrySignal.totalRetries() + 1))
+                    )
+                    .block(Duration.ofMinutes(5));
 
             String revised = responseMap != null && responseMap.get("revised_markdown") != null 
                 ? responseMap.get("revised_markdown").toString() 

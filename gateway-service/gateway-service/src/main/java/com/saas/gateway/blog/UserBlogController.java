@@ -94,12 +94,14 @@ public class UserBlogController {
         return blogRepository.findByIdAndUserId(id, userId).map(blog -> {
             blog.setStatus(Status.PUBLISHED);
             
-            // Generate a URL-friendly slug from the title to avoid NPE and unique constraint violations
-            String title = blog.getTitle();
-            if (title == null || title.isBlank()) title = "untitled-blog";
-            String baseSlug = title.toLowerCase().replaceAll("[^a-z0-9\\s]", "").replaceAll("\\s+", "-");
-            String slug = baseSlug + "-" + blog.getId().toString().substring(0, 8);
-            blog.setSlug(slug);
+            // Generate a URL-friendly slug from the title only if not already set
+            if (blog.getSlug() == null || blog.getSlug().isBlank()) {
+                String title = blog.getTitle();
+                if (title == null || title.isBlank()) title = "untitled-blog";
+                String baseSlug = title.toLowerCase().replaceAll("[^a-z0-9\\s]", "").replaceAll("\\s+", "-");
+                String slug = baseSlug + "-" + blog.getId().toString().substring(0, 8);
+                blog.setSlug(slug);
+            }
 
             String customSeo = body.get("seoDescription");
             String category = body.get("category");

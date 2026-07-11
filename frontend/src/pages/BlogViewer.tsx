@@ -17,7 +17,7 @@ export const BlogViewer = () => {
 
   React.useEffect(() => {
     if (blog) {
-      document.title = `${blog.title} | AgenticBlog.`;
+      document.title = `${blog.title} | blogWHO.`;
       let meta = document.querySelector('meta[name="description"]');
       if (!meta) {
         meta = document.createElement('meta');
