@@ -126,7 +126,7 @@ public class SyncWebClientAiService implements AiGenerationService {
                     .body(BodyInserters.fromMultipartData(builder.build()))
                     .retrieve()
                     .bodyToMono(java.util.Map.class)
-                    .retryWhen(Retry.fixedDelay(4, Duration.ofSeconds(15))
+                    .retryWhen(Retry.fixedDelay(10, Duration.ofSeconds(10))
                             .filter(throwable -> {
                                 if (throwable instanceof WebClientResponseException) {
                                     return ((WebClientResponseException) throwable).getStatusCode().is5xxServerError();
@@ -185,7 +185,7 @@ public class SyncWebClientAiService implements AiGenerationService {
                     .bodyValue(requestBody)
                     .retrieve()
                     .bodyToMono(java.util.Map.class)
-                    .retryWhen(Retry.fixedDelay(4, Duration.ofSeconds(15))
+                    .retryWhen(Retry.fixedDelay(10, Duration.ofSeconds(10))
                             .filter(throwable -> {
                                 if (throwable instanceof WebClientResponseException) {
                                     return ((WebClientResponseException) throwable).getStatusCode().is5xxServerError();

@@ -1,22 +1,21 @@
 package com.saas.gateway.auth;
 
-import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.mail.javamail.MimeMessageHelper;
+import com.resend.*;
+import com.resend.core.exception.ResendException;
+import com.resend.services.emails.model.CreateEmailOptions;
+import com.resend.services.emails.model.CreateEmailResponse;
 import org.springframework.stereotype.Service;
+import org.springframework.beans.factory.annotation.Value;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import jakarta.mail.MessagingException;
-import jakarta.mail.internet.MimeMessage;
 
 @Service
 public class EmailService {
 
     private static final Logger log = LoggerFactory.getLogger(EmailService.class);
-    private final JavaMailSender mailSender;
-
-    public EmailService(JavaMailSender mailSender) {
-        this.mailSender = mailSender;
-    }
+    
+    @Value("${resend.api.key:${RESEND_API_KEY:}}")
+    private String resendApiKey;
 
     public void sendVerificationOtpEmail(String to, String otp) {
         log.info("Sending verification OTP email to {}. OTP is: {}", to, otp);
@@ -177,22 +176,33 @@ public class EmailService {
         sendEmail(to, "Reset password for blogWho", otpEmail);
     }
 
+    @Value("${spring.mail.username:onboarding@resend.dev}")
+    private String fromEmail;
+
     private void sendEmail(String to, String subject, String htmlContent) {
-        try {
-            MimeMessage message = mailSender.createMimeMessage();
-            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
-
-            helper.setTo(to);
-            helper.setSubject(subject);
-            helper.setText(htmlContent, true);
-
-            mailSender.send(message);
-        } catch (MessagingException e) {
-            log.error("Failed to create email message to {}", to, e);
+        if (resendApiKey == null || resendApiKey.isBlank() || resendApiKey.equals("re_xxxxxxxxx")) {
+            log.warn("RESEND_API_KEY is not set or is invalid. Email to {} not sent.", to);
             log.warn("Since email failed, if you are in local dev, check the logs for the OTP.");
-        } catch (org.springframework.mail.MailException e) {
-            log.error("Failed to send email to {} (SMTP may not be configured properly). Error: {}", to,
-                    e.getMessage());
+            return;
+        }
+
+        try {
+            Resend resend = new Resend(resendApiKey);
+
+            CreateEmailOptions sendEmailRequest = CreateEmailOptions.builder()
+                    .from(fromEmail)
+                    .to(to)
+                    .subject(subject)
+                    .html(htmlContent)
+                    .build();
+
+            CreateEmailResponse data = resend.emails().send(sendEmailRequest);
+            log.info("Successfully sent email via Resend to {}. ID: {}", to, data.getId());
+        } catch (ResendException e) {
+            log.error("Failed to send email to {} via Resend. Error: {}", to, e.getMessage(), e);
+            log.warn("Since email failed, if you are in local dev, check the logs for the OTP.");
+        } catch (Exception e) {
+            log.error("Unexpected error sending email to {}", to, e);
             log.warn("Since email failed, if you are in local dev, check the logs for the OTP.");
         }
     }
