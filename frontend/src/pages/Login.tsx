@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
-import { useLoginMutation, useLogin2faMutation } from '../store/api/authApi';
+import { useLoginMutation } from '../store/api/authApi';
 import { setCredentials } from '../store/slices/authSlice';
 import { Button, Panel, Field, Input } from '../components/tui/Primitives';
 import { systemLog } from '../utils/logger';
@@ -10,12 +10,8 @@ export const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [code, setCode] = useState('');
-  const [requires2fa, setRequires2fa] = useState(false);
   const [validationError, setValidationError] = useState('');
-  
   const [login, { isLoading: isLoginLoading, error: loginError }] = useLoginMutation();
-  const [login2fa, { isLoading: is2faLoading, error: error2fa }] = useLogin2faMutation();
   
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -38,27 +34,12 @@ export const Login = () => {
     try {
       const response = await login({ email, password }).unwrap();
       
-      if (response.requires2fa) {
-        setRequires2fa(true);
-      } else {
-        systemLog('Login.tsx', 'handleSubmit', 'Login successful, dispatching token to Redux store');
-        dispatch(setCredentials({ token: response.token }));
-        navigate('/dashboard');
-      }
-    } catch (err) {
-      systemLog('Login.tsx', 'handleSubmit', 'Login failed due to invalid credentials or server error');
-      console.error('Login failed:', err);
-    }
-  };
-
-  const handle2FASubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    try {
-      const response = await login2fa({ email, password, code }).unwrap();
+      systemLog('Login.tsx', 'handleSubmit', 'Login successful, dispatching token to Redux store');
       dispatch(setCredentials({ token: response.token }));
       navigate('/dashboard');
     } catch (err) {
-      console.error('2FA Login failed:', err);
+      systemLog('Login.tsx', 'handleSubmit', 'Login failed due to invalid credentials or server error');
+      console.error('Login failed:', err);
     }
   };
 
@@ -66,11 +47,10 @@ export const Login = () => {
     <div className="flex justify-center items-center h-[calc(100vh-80px)] font-mono text-sm">
       <Panel title="AUTHENTICATION" className="w-full max-w-md mt-0">
         <div className="mb-6 border-b border-border pb-4">
-          <h1 className="text-xl font-bold text-fg uppercase tracking-widest">{requires2fa ? 'Two-Factor Auth' : 'Login'}</h1>
+          <h1 className="text-xl font-bold text-fg uppercase tracking-widest">Login</h1>
         </div>
         
-        {!requires2fa ? (
-          <form onSubmit={handleLoginSubmit} className="flex flex-col gap-4">
+        <form onSubmit={handleLoginSubmit} className="flex flex-col gap-4">
             <Field label="Email">
               <Input 
                 type="email" 
@@ -114,38 +94,12 @@ export const Login = () => {
               </Button>
             </div>
           </form>
-        ) : (
-          <form onSubmit={handle2FASubmit} className="flex flex-col gap-4">
-            <p className="text-secondary mb-4">Please enter the 6-digit code from your authenticator app.</p>
-            <Field label="Authenticator Code">
-              <Input 
-                type="text" 
-                required 
-                value={code}
-                onChange={(e: any) => setCode(e.target.value)}
-                placeholder="000000"
-                maxLength={6}
-              />
-            </Field>
-            
-            {error2fa && <p className="text-danger uppercase tracking-widest text-xs mt-2">Invalid code</p>}
-            
-            <div className="mt-4 flex justify-between">
-              <Button type="button" variant="ghost" onClick={() => setRequires2fa(false)}>Back</Button>
-              <Button type="submit" variant="primary" disabled={is2faLoading}>
-                {is2faLoading ? 'Verifying...' : 'Verify'}
-              </Button>
-            </div>
-          </form>
-        )}
         
-        {!requires2fa && (
-          <div className="mt-6 pt-4 border-t border-border text-center">
-            <p className="text-secondary text-xs uppercase tracking-widest">
-              Not registered yet? <a href="/register" className="text-accent hover:text-fg font-bold">Register now</a>
-            </p>
-          </div>
-        )}
+        <div className="mt-6 pt-4 border-t border-border text-center">
+          <p className="text-secondary text-xs uppercase tracking-widest">
+            Not registered yet? <a href="/register" className="text-accent hover:text-fg font-bold">Register now</a>
+          </p>
+        </div>
       </Panel>
     </div>
   );

@@ -115,7 +115,10 @@ export const Register = () => {
           </form>
         ) : (
           <form onSubmit={handleVerify} className="flex flex-col gap-4">
-            <p className="text-secondary mb-4">Please enter the 6-digit verification code sent to {email}.</p>
+            <div className="bg-surface p-3 rounded border border-border">
+              <p className="text-secondary mb-1">Please enter the 6-digit verification code sent to <span className="text-fg font-bold">{email}</span>.</p>
+              <p className="text-accent text-xs tracking-widest uppercase">Note: Please check your spam/junk folder if you don't see it within a few minutes.</p>
+            </div>
             <Field label="Verification Code">
               <Input 
                 type="text" 

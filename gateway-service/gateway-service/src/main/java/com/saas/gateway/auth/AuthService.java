@@ -49,7 +49,7 @@ public class AuthService {
         log.info("Generating JWT token for authenticated user ID: {}", user.getId());
         String token = tokenProvider.createToken(authentication, user.getId());
 
-        return new AuthResponse(token, false, user.getEmail());
+        return new AuthResponse(token, user.getEmail());
     }
 
     public void register(AuthRequest request) {
@@ -115,6 +115,6 @@ public class AuthService {
                 new UsernamePasswordAuthenticationToken(user.getEmail(), null, java.util.Collections.emptyList()), 
                 user.getId());
 
-        return new AuthResponse(token, false, user.getEmail());
+        return new AuthResponse(token, user.getEmail());
     }
 }

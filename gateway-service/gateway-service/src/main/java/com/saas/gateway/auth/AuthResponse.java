@@ -1,3 +1,3 @@
 package com.saas.gateway.auth;
 
-public record AuthResponse(String token, boolean requires2fa, String email) {}
+public record AuthResponse(String token, String email) {}

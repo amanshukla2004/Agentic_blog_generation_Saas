@@ -42,6 +42,24 @@ public class PasswordResetService {
         emailService.sendPasswordResetEmail(user.getEmail(), otp);
     }
 
+    public void verifyPasswordResetOtp(String email, String otp) {
+        Optional<User> optionalUser = userRepository.findByEmail(email);
+
+        if (optionalUser.isEmpty()) {
+            throw new RuntimeException("Invalid email or OTP");
+        }
+
+        User user = optionalUser.get();
+        
+        if (user.getOtp() == null || !user.getOtp().equals(otp)) {
+            throw new RuntimeException("Invalid OTP code");
+        }
+        
+        if (user.getOtpExpiry() != null && LocalDateTime.now().isAfter(user.getOtpExpiry())) {
+            throw new RuntimeException("OTP code has expired");
+        }
+    }
+
     public void resetPassword(String email, String otp, String newPassword) {
         Optional<User> optionalUser = userRepository.findByEmail(email);
 

@@ -63,6 +63,13 @@ public class AuthController {
         return ResponseEntity.ok(java.util.Map.of("message", "If that email is registered, a password reset OTP has been sent."));
     }
 
+    @PostMapping("/verify-reset-otp")
+    public ResponseEntity<java.util.Map<String, String>> verifyResetOtp(@RequestParam String email, @RequestParam String otp) {
+        log.info("Received verify reset OTP request for email: {}", email);
+        passwordResetService.verifyPasswordResetOtp(email, otp);
+        return ResponseEntity.ok(java.util.Map.of("message", "OTP verified successfully."));
+    }
+
     @PostMapping("/reset-password")
     public ResponseEntity<java.util.Map<String, String>> resetPassword(@RequestParam String email, @RequestParam String otp, @RequestParam String newPassword) {
         log.info("Received reset password request for email: {}", email);
