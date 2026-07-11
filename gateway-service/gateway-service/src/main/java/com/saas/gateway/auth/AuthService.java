@@ -54,9 +54,22 @@ public class AuthService {
 
     public void register(AuthRequest request) {
         log.info("Attempting to register new user with email: {}", request.email());
-        if (userRepository.findByEmail(request.email()).isPresent()) {
-            log.warn("Registration failed: Email {} is already in use", request.email());
-            throw new RuntimeException("Email already in use");
+        java.util.Optional<User> existingUserOpt = userRepository.findByEmail(request.email());
+        if (existingUserOpt.isPresent()) {
+            User existingUser = existingUserOpt.get();
+            if (Boolean.TRUE.equals(existingUser.getIsVerified())) {
+                log.warn("Registration failed: Email {} is already in use", request.email());
+                throw new RuntimeException("Email already in use");
+            } else {
+                log.info("User exists but is not verified. Resending OTP.");
+                String otp = String.format("%06d", new Random().nextInt(999999));
+                existingUser.setOtp(otp);
+                existingUser.setOtpExpiry(LocalDateTime.now().plusMinutes(15));
+                existingUser.setPasswordHash(passwordEncoder.encode(request.password()));
+                userRepository.save(existingUser);
+                emailService.sendVerificationOtpEmail(existingUser.getEmail(), otp);
+                return;
+            }
         }
 
         log.info("Saving new user to database");
