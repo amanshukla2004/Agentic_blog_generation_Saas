@@ -1,11 +1,10 @@
 package com.saas.gateway.auth;
 
-import com.resend.*;
-import com.resend.core.exception.ResendException;
-import com.resend.services.emails.model.CreateEmailOptions;
-import com.resend.services.emails.model.CreateEmailResponse;
-import org.springframework.stereotype.Service;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
+import org.springframework.stereotype.Service;
+import jakarta.mail.internet.MimeMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -14,11 +13,20 @@ public class EmailService {
 
     private static final Logger log = LoggerFactory.getLogger(EmailService.class);
     
-    @Value("${resend.api.key:${RESEND_API_KEY:}}")
-    private String resendApiKey;
+    private final JavaMailSender mailSender;
+    
+    @Value("${app.email.from:${EMAIL_FROM_ADDRESS:noreply@blogwho.com}}")
+    private String fromEmail;
+
+    public EmailService(JavaMailSender mailSender) {
+        this.mailSender = mailSender;
+    }
 
     public void sendVerificationOtpEmail(String to, String otp) {
-        log.info("Sending verification OTP email to {}. OTP is: {}", to, otp);
+        log.warn("=====================================================");
+        log.warn("🔐 OTP FOR REGISTRATION: {} (Email: {})", otp, to);
+        log.warn("=====================================================");
+        
         String registrationEmail = 
             "<!DOCTYPE html>" +
             "<html>" +
@@ -97,7 +105,10 @@ public class EmailService {
     }
 
     public void sendPasswordResetEmail(String to, String otp) {
-        log.info("Sending password reset OTP email to {}. OTP is: {}", to, otp);
+        log.warn("=====================================================");
+        log.warn("🔑 OTP FOR PASSWORD RESET: {} (Email: {})", otp, to);
+        log.warn("=====================================================");
+        
         String otpEmail = 
             "<!DOCTYPE html>" +
             "<html>" +
@@ -176,34 +187,21 @@ public class EmailService {
         sendEmail(to, "Reset password for blogWho", otpEmail);
     }
 
-    @Value("${resend.from.email:${RESEND_FROM_EMAIL:onboarding@resend.dev}}")
-    private String fromEmail;
-
     private void sendEmail(String to, String subject, String htmlContent) {
-        if (resendApiKey == null || resendApiKey.isBlank() || resendApiKey.equals("re_xxxxxxxxx")) {
-            log.warn("RESEND_API_KEY is not set or is invalid. Email to {} not sent.", to);
-            log.warn("Since email failed, if you are in local dev, check the logs for the OTP.");
-            return;
-        }
-
         try {
-            Resend resend = new Resend(resendApiKey);
-
-            CreateEmailOptions sendEmailRequest = CreateEmailOptions.builder()
-                    .from(fromEmail)
-                    .to(to)
-                    .subject(subject)
-                    .html(htmlContent)
-                    .build();
-
-            CreateEmailResponse data = resend.emails().send(sendEmailRequest);
-            log.info("Successfully sent email via Resend to {}. ID: {}", to, data.getId());
-        } catch (ResendException e) {
-            log.error("Failed to send email to {} via Resend. Error: {}", to, e.getMessage(), e);
-            log.warn("Since email failed, if you are in local dev, check the logs for the OTP.");
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+            
+            helper.setFrom(fromEmail);
+            helper.setTo(to);
+            helper.setSubject(subject);
+            helper.setText(htmlContent, true);
+            
+            mailSender.send(message);
+            log.info("Successfully sent SMTP email to {}", to);
         } catch (Exception e) {
-            log.error("Unexpected error sending email to {}", to, e);
-            log.warn("Since email failed, if you are in local dev, check the logs for the OTP.");
+            log.error("Failed to send SMTP email to {}. Error: {}", to, e.getMessage(), e);
+            log.warn("Since email failed, check the OTP log above if testing.");
         }
     }
 }

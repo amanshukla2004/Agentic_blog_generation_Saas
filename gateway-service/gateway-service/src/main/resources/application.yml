@@ -15,6 +15,18 @@ spring:
         format_sql: false
     show-sql: false
 
+  mail:
+    host: ${SMTP_HOST:smtp-relay.brevo.com}
+    port: ${SMTP_PORT:587}
+    username: ${SMTP_USERNAME}
+    password: ${SMTP_PASSWORD}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+
 server:
   port: 8080
 
@@ -31,12 +43,8 @@ app:
       password: ${MASTER_ADMIN_PASSWORD}
   frontend:
     url: ${FRONTEND_URL:http://localhost:5173}
-
-resend:
-  api:
-    key: ${RESEND_API_KEY:}
-  from:
-    email: ${RESEND_FROM_EMAIL:onboarding@resend.dev}
+  email:
+    from: ${EMAIL_FROM_ADDRESS:noreply@blogwho.com}
 
 ai-service:
   base-url: ${AI_SERVICE_URL:http://127.0.0.1:8000}
