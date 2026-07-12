@@ -34,12 +34,33 @@ public class EmailService {
             "<meta charset='UTF-8'>" +
             "<meta name='viewport' content='width=device-width, initial-scale=1.0'>" +
             "</head>" +
-            "<body style='margin: 0; padding: 0; background-color: #0f172a;'>" +
-                "<div style='background-color: #0f172a; padding: 40px 20px; font-family: \"Inter\", sans-serif;'>" +
-                    "<div style='max-width: 520px; margin: 0 auto; background-color: #1e293b; border-radius: 16px; padding: 40px; text-align: center;'>" +
-                        "<h2 style='color: #f8fafc; font-size: 20px;'>Welcome to blogWho!</h2>" +
-                        "<p style='color: #cbd5e1; font-size: 15px;'>Your verification code is:</p>" +
-                        "<strong style='font-size: 36px; color: #10b981;'>" + otp + "</strong>" +
+            "<body style='margin: 0; padding: 0; background-color: #0a0a0a; color: #ededed;'>" +
+                "<div style='padding: 60px 20px; font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, sans-serif;'>" +
+                    "<div style='max-width: 480px; margin: 0 auto; background-color: #0a0a0a; border: 1px solid #2a2a2a; padding: 40px;'>" +
+                        "<div style='margin-bottom: 30px;'>" +
+                            "<h1 style='margin: 0; font-size: 24px; font-weight: 600; letter-spacing: -0.5px; color: #ffffff;'>blogWho.</h1>" +
+                        "</div>" +
+                        "<h2 style='margin: 0 0 10px 0; font-size: 16px; font-weight: 500; color: #888888;'>Authentication</h2>" +
+                        "<p style='font-size: 14px; line-height: 1.6; margin: 0 0 30px 0; color: #ededed;'>Please enter the following code to verify your email address and complete your registration:</p>" +
+                        
+                        "<div style='background-color: #1a1a1a; border: 1px solid #2a2a2a; padding: 24px; text-align: center; margin-bottom: 30px;'>" +
+                            "<strong style='font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; font-size: 32px; letter-spacing: 8px; color: #ffffff;'>" + 
+                                otp + 
+                            "</strong>" +
+                        "</div>" +
+                        
+                        "<p style='font-size: 12px; color: #555555; margin: 0;'>This code expires in 15 minutes. If you did not request this, you can safely ignore this email.</p>" +
+                        
+                        "<hr style='border: none; border-top: 1px solid #2a2a2a; margin: 30px 0;' />" +
+                        "<div style='text-align: left;'>" +
+                            "<h3 style='margin: 0 0 10px 0; font-size: 14px; font-weight: 600; color: #ffffff;'>Built by Aman Shukla</h3>" +
+                            "<p style='margin: 0 0 15px 0; font-size: 13px; color: #888888; line-height: 1.5;'>I am a Software Developer actively looking for new opportunities. If you like the architecture of this app, let's connect!</p>" +
+                            "<div>" +
+                                "<a href='https://www.linkedin.com/in/amanshukla-dev/' style='display: inline-block; border: 1px solid #2a2a2a; color: #ededed; background-color: #1a1a1a; text-decoration: none; font-size: 12px; font-weight: 500; padding: 6px 12px; margin-right: 10px; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;'>LinkedIn</a>" +
+                                "<a href='https://github.com/amanshukla2004' style='display: inline-block; border: 1px solid #2a2a2a; color: #ededed; background-color: #1a1a1a; text-decoration: none; font-size: 12px; font-weight: 500; padding: 6px 12px; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;'>GitHub</a>" +
+                            "</div>" +
+                        "</div>" +
+                        
                     "</div>" +
                 "</div>" +
             "</body>" +
@@ -60,12 +81,33 @@ public class EmailService {
             "<meta charset='UTF-8'>" +
             "<meta name='viewport' content='width=device-width, initial-scale=1.0'>" +
             "</head>" +
-            "<body style='margin: 0; padding: 0; background-color: #0f172a;'>" +
-                "<div style='background-color: #0f172a; padding: 40px 20px; font-family: \"Inter\", sans-serif;'>" +
-                    "<div style='max-width: 520px; margin: 0 auto; background-color: #1e293b; border-radius: 16px; padding: 40px; text-align: center;'>" +
-                        "<h2 style='color: #f8fafc; font-size: 20px;'>Password Reset</h2>" +
-                        "<p style='color: #cbd5e1; font-size: 15px;'>Your reset code is:</p>" +
-                        "<strong style='font-size: 36px; color: #0ea5e9;'>" + otp + "</strong>" +
+            "<body style='margin: 0; padding: 0; background-color: #0a0a0a; color: #ededed;'>" +
+                "<div style='padding: 60px 20px; font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, sans-serif;'>" +
+                    "<div style='max-width: 480px; margin: 0 auto; background-color: #0a0a0a; border: 1px solid #2a2a2a; padding: 40px;'>" +
+                        "<div style='margin-bottom: 30px;'>" +
+                            "<h1 style='margin: 0; font-size: 24px; font-weight: 600; letter-spacing: -0.5px; color: #ffffff;'>blogWho.</h1>" +
+                        "</div>" +
+                        "<h2 style='margin: 0 0 10px 0; font-size: 16px; font-weight: 500; color: #888888;'>Password Reset</h2>" +
+                        "<p style='font-size: 14px; line-height: 1.6; margin: 0 0 30px 0; color: #ededed;'>Please enter the following code to reset your password:</p>" +
+                        
+                        "<div style='background-color: #1a1a1a; border: 1px solid #2a2a2a; padding: 24px; text-align: center; margin-bottom: 30px;'>" +
+                            "<strong style='font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; font-size: 32px; letter-spacing: 8px; color: #ffffff;'>" + 
+                                otp + 
+                            "</strong>" +
+                        "</div>" +
+                        
+                        "<p style='font-size: 12px; color: #555555; margin: 0;'>This code expires in 15 minutes. If you did not request this, you can safely ignore this email.</p>" +
+                        
+                        "<hr style='border: none; border-top: 1px solid #2a2a2a; margin: 30px 0;' />" +
+                        "<div style='text-align: left;'>" +
+                            "<h3 style='margin: 0 0 10px 0; font-size: 14px; font-weight: 600; color: #ffffff;'>Built by Aman Shukla</h3>" +
+                            "<p style='margin: 0 0 15px 0; font-size: 13px; color: #888888; line-height: 1.5;'>I am a Software Developer actively looking for new opportunities. If you like the architecture of this app, let's connect!</p>" +
+                            "<div>" +
+                                "<a href='https://www.linkedin.com/in/amanshukla-dev/' style='display: inline-block; border: 1px solid #2a2a2a; color: #ededed; background-color: #1a1a1a; text-decoration: none; font-size: 12px; font-weight: 500; padding: 6px 12px; margin-right: 10px; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;'>LinkedIn</a>" +
+                                "<a href='https://github.com/amanshukla2004' style='display: inline-block; border: 1px solid #2a2a2a; color: #ededed; background-color: #1a1a1a; text-decoration: none; font-size: 12px; font-weight: 500; padding: 6px 12px; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;'>GitHub</a>" +
+                            "</div>" +
+                        "</div>" +
+                        
                     "</div>" +
                 "</div>" +
             "</body>" +
