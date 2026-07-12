@@ -16,19 +16,9 @@ spring:
     show-sql: false
 
   mail:
-    host: ${SMTP_HOST:smtp-relay.brevo.com}
-    port: ${SMTP_PORT:587}
-    username: ${SMTP_USERNAME}
-    password: ${SMTP_PASSWORD}
-    properties:
-      mail:
-        smtp:
-          auth: true
-          starttls:
-            enable: true
-          connectiontimeout: 5000
-          timeout: 5000
-          writetimeout: 5000
+    host: localhost
+    port: 2525
+
 
 server:
   port: 8080
@@ -48,6 +38,10 @@ app:
     url: ${FRONTEND_URL:http://localhost:5173}
   email:
     from: ${EMAIL_FROM_ADDRESS:noreply@blogwho.com}
+
+brevo:
+  api:
+    key: ${BREVO_API_KEY:}
 
 ai-service:
   base-url: ${AI_SERVICE_URL:http://127.0.0.1:8000}
