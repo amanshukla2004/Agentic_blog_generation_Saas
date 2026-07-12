@@ -80,10 +80,19 @@ public class EmailService {
             return;
         }
 
+        // Defensively trim and remove accidental quotes from the environment variable
+        String cleanApiKey = brevoApiKey.trim().replace("\"", "").replace("'", "");
+        
+        String maskedKey = cleanApiKey.length() > 10 
+            ? cleanApiKey.substring(0, 10) + "..." 
+            : "INVALID_LENGTH";
+            
+        log.info("Attempting to send email to {} via Brevo API using API Key starting with: {}", to, maskedKey);
+
         try {
             RestTemplate restTemplate = new RestTemplate();
             HttpHeaders headers = new HttpHeaders();
-            headers.set("api-key", brevoApiKey);
+            headers.set("api-key", cleanApiKey);
             headers.set("Content-Type", "application/json");
             headers.set("Accept", "application/json");
 
