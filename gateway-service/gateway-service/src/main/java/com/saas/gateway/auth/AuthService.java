@@ -11,7 +11,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.time.LocalDateTime;
-import java.util.Random;
+import java.security.SecureRandom;
 
 @Service
 public class AuthService {
@@ -62,7 +62,7 @@ public class AuthService {
                 throw new RuntimeException("Email already in use");
             } else {
                 log.info("User exists but is not verified. Resending OTP.");
-                String otp = String.format("%06d", new Random().nextInt(999999));
+                String otp = String.format("%06d", new SecureRandom().nextInt(999999));
                 existingUser.setOtp(otp);
                 existingUser.setOtpExpiry(LocalDateTime.now().plusMinutes(15));
                 existingUser.setPasswordHash(passwordEncoder.encode(request.password()));
@@ -76,7 +76,7 @@ public class AuthService {
         User user = new User(request.email(), passwordEncoder.encode(request.password()));
         user.setIsVerified(false);
         
-        String otp = String.format("%06d", new Random().nextInt(999999));
+        String otp = String.format("%06d", new SecureRandom().nextInt(999999));
         user.setOtp(otp);
         user.setOtpExpiry(LocalDateTime.now().plusMinutes(15));
         

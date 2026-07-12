@@ -56,10 +56,13 @@ The application relies on several environment variables. You can provide these v
 DB_URL=jdbc:postgresql://localhost:5432/blog_saas_db
 DB_USERNAME=postgres
 DB_PASSWORD=your_secure_password
-
 # Authentication (JWT)
 JWT_SECRET=404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970
 INTERNAL_SECRET=my-super-secret-internal-key-for-ai-worker
+
+# Email / Resend Configuration
+RESEND_API_KEY=re_your_api_key_here
+RESEND_FROM_EMAIL=onboarding@resend.dev
 
 # Master Admin Seed Credentials (Created on first boot)
 MASTER_ADMIN_EMAIL=master@admin.com

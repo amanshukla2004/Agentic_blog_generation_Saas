@@ -45,9 +45,7 @@ public class PublicAuthorController {
     @GetMapping("/{username}")
     @Transactional(readOnly = true)
     public ResponseEntity<AuthorProfileDTO> getAuthorProfile(@PathVariable String username) {
-        return userRepository.findAll().stream()
-                .filter(u -> username.equalsIgnoreCase(u.getUsername()))
-                .findFirst()
+        return userRepository.findByUsernameIgnoreCase(username)
                 .map(user -> {
                     List<BlogResponseDTO> blogs = blogRepository.findByUserId(user.getId()).stream()
                             .filter(b -> b.getStatus() == Status.PUBLISHED)

@@ -1,10 +1,13 @@
 package com.saas.gateway.system;
 
 import com.saas.gateway.user.User;
+import com.saas.gateway.user.Role;
+import com.saas.gateway.user.SubscriptionTier;
 import com.saas.gateway.user.UserRepository;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.reactive.function.client.WebClient;
 
 import java.util.HashMap;
 import java.util.List;
@@ -12,76 +15,105 @@ import java.util.Map;
 import java.util.UUID;
 import com.saas.gateway.blog.BlogRepository;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.web.client.RestTemplate;
 
 @RestController
 @RequestMapping("/api/v1/master")
 public class MasterAdminController {
+
+    /**
+     * Safe DTO that excludes sensitive fields (passwordHash, otp, otpExpiry).
+     */
+    public record UserDTO(
+            UUID id,
+            String email,
+            String username,
+            String bio,
+            Integer generationsCount,
+            SubscriptionTier subscriptionTier,
+            Boolean isActive,
+            Role role,
+            Boolean isVerified
+    ) {
+        public static UserDTO fromEntity(User user) {
+            return new UserDTO(
+                    user.getId(),
+                    user.getEmail(),
+                    user.getUsername(),
+                    user.getBio(),
+                    user.getGenerationsCount(),
+                    user.getSubscriptionTier(),
+                    user.getIsActive(),
+                    user.getRole(),
+                    user.getIsVerified()
+            );
+        }
+    }
 
     private final UserRepository userRepository;
     private final SystemErrorLogRepository systemErrorLogRepository;
     private final SystemPromptRepository systemPromptRepository;
     private final SystemSettingRepository systemSettingRepository;
     private final BlogRepository blogRepository;
-
-    @Value("${ai-service.base-url}")
-    private String aiServiceBaseUrl;
-
-    @Value("${app.security.internal-secret}")
-    private String internalSecret;
+    private final WebClient aiWebClient;
 
     public MasterAdminController(UserRepository userRepository, 
                                  SystemErrorLogRepository systemErrorLogRepository,
                                  SystemPromptRepository systemPromptRepository,
                                  SystemSettingRepository systemSettingRepository,
-                                 BlogRepository blogRepository) {
+                                 BlogRepository blogRepository,
+                                 WebClient.Builder webClientBuilder,
+                                 @Value("${ai-service.base-url}") String aiServiceBaseUrl,
+                                 @Value("${app.security.internal-secret}") String internalSecret) {
         this.userRepository = userRepository;
         this.systemErrorLogRepository = systemErrorLogRepository;
         this.systemPromptRepository = systemPromptRepository;
         this.systemSettingRepository = systemSettingRepository;
         this.blogRepository = blogRepository;
+        this.aiWebClient = webClientBuilder.baseUrl(aiServiceBaseUrl)
+                .defaultHeader("X-Internal-Secret", internalSecret)
+                .build();
     }
 
     @GetMapping("/users")
     @PreAuthorize("hasRole('MASTER_ADMIN')")
-    public ResponseEntity<List<User>> getAllUsers() {
-        return ResponseEntity.ok(userRepository.findAll());
+    public ResponseEntity<List<UserDTO>> getAllUsers() {
+        List<UserDTO> users = userRepository.findAll().stream()
+                .map(UserDTO::fromEntity)
+                .toList();
+        return ResponseEntity.ok(users);
     }
 
     @PostMapping("/users/{id}/reset-quota")
     @PreAuthorize("hasRole('MASTER_ADMIN')")
-    public ResponseEntity<User> resetUserQuota(@PathVariable UUID id) {
+    public ResponseEntity<UserDTO> resetUserQuota(@PathVariable UUID id) {
         return userRepository.findById(id).map(user -> {
             user.setGenerationsCount(0);
-            return ResponseEntity.ok(userRepository.save(user));
+            return ResponseEntity.ok(UserDTO.fromEntity(userRepository.save(user)));
         }).orElse(ResponseEntity.notFound().build());
     }
 
     @PostMapping("/users/{id}/toggle-active")
     @PreAuthorize("hasRole('MASTER_ADMIN')")
-    public ResponseEntity<User> toggleUserActive(@PathVariable UUID id) {
+    public ResponseEntity<UserDTO> toggleUserActive(@PathVariable UUID id) {
         return userRepository.findById(id).map(user -> {
             user.setIsActive(!user.getIsActive());
-            return ResponseEntity.ok(userRepository.save(user));
+            return ResponseEntity.ok(UserDTO.fromEntity(userRepository.save(user)));
         }).orElse(ResponseEntity.notFound().build());
     }
 
     @PostMapping("/users/{id}/toggle-admin")
     @PreAuthorize("hasRole('MASTER_ADMIN')")
-    public ResponseEntity<User> toggleUserAdmin(@PathVariable UUID id) {
+    public ResponseEntity<UserDTO> toggleUserAdmin(@PathVariable UUID id) {
         return userRepository.findById(id).map(user -> {
-            if (user.getRole() == com.saas.gateway.user.Role.MASTER_ADMIN) {
-                return ResponseEntity.badRequest().body(user); // Can't toggle master admin
+            if (user.getRole() == Role.MASTER_ADMIN) {
+                return ResponseEntity.badRequest().body(UserDTO.fromEntity(user)); // Can't toggle master admin
             }
-            if (user.getRole() == com.saas.gateway.user.Role.ADMIN) {
-                user.setRole(com.saas.gateway.user.Role.USER);
+            if (user.getRole() == Role.ADMIN) {
+                user.setRole(Role.USER);
             } else {
-                user.setRole(com.saas.gateway.user.Role.ADMIN);
+                user.setRole(Role.ADMIN);
             }
-            return ResponseEntity.ok(userRepository.save(user));
+            return ResponseEntity.ok(UserDTO.fromEntity(userRepository.save(user)));
         }).orElse(ResponseEntity.notFound().build());
     }
 
@@ -146,31 +178,21 @@ public class MasterAdminController {
         Map<String, Object> stats = new HashMap<>();
         stats.put("totalUsers", userRepository.count());
         stats.put("totalBlogs", blogRepository.count());
-        
-        long totalGenerations = userRepository.findAll().stream()
-                .mapToLong(User::getGenerationsCount)
-                .sum();
-        stats.put("totalGenerations", totalGenerations);
-        
+        stats.put("totalGenerations", userRepository.sumGenerationsCount());
         return ResponseEntity.ok(stats);
     }
 
     @GetMapping("/ai-health")
     @PreAuthorize("hasRole('MASTER_ADMIN')")
     public ResponseEntity<Map<String, Object>> getAiHealth() {
-        RestTemplate restTemplate = new RestTemplate();
         try {
-            HttpHeaders headers = new HttpHeaders();
-            headers.set("X-Internal-Secret", internalSecret);
-            HttpEntity<Void> entity = new HttpEntity<>(headers);
-            
-            ResponseEntity<Map> response = restTemplate.exchange(
-                aiServiceBaseUrl + "/health", 
-                HttpMethod.GET, 
-                entity, 
-                Map.class
-            );
-            return ResponseEntity.ok(response.getBody());
+            @SuppressWarnings("unchecked")
+            Map<String, Object> response = aiWebClient.get()
+                    .uri("/health")
+                    .retrieve()
+                    .bodyToMono(Map.class)
+                    .block();
+            return ResponseEntity.ok(response);
         } catch (Exception e) {
             Map<String, Object> error = new HashMap<>();
             error.put("status", "error");

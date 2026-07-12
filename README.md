@@ -83,6 +83,8 @@ To run this platform locally, ensure you have the following installed globally o
 DB_URL=jdbc:postgresql://localhost:5432/blog_saas_db
 DB_USERNAME=postgres
 DB_PASSWORD=your_secure_password
+RESEND_API_KEY=re_your_api_key_here
+RESEND_FROM_EMAIL=onboarding@resend.dev
 JWT_SECRET=404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970
 INTERNAL_SECRET=my-super-secret-internal-key-for-ai-worker
 AI_SERVICE_URL=http://127.0.0.1:8000

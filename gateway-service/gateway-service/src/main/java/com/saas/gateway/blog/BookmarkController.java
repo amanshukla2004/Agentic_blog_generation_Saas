@@ -3,6 +3,7 @@ package com.saas.gateway.blog;
 import com.saas.gateway.user.User;
 import com.saas.gateway.user.UserRepository;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.data.domain.Page;
@@ -30,6 +31,7 @@ public class BookmarkController {
     }
 
     @PostMapping("/{blogId}")
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN', 'MASTER_ADMIN')")
     @Transactional
     public ResponseEntity<?> addBookmark(@PathVariable UUID blogId, Principal principal) {
         UUID userId = UUID.fromString(principal.getName());
@@ -49,6 +51,7 @@ public class BookmarkController {
     }
 
     @DeleteMapping("/{blogId}")
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN', 'MASTER_ADMIN')")
     @Transactional
     public ResponseEntity<?> removeBookmark(@PathVariable UUID blogId, Principal principal) {
         UUID userId = UUID.fromString(principal.getName());
@@ -57,6 +60,7 @@ public class BookmarkController {
     }
 
     @GetMapping
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN', 'MASTER_ADMIN')")
     @Transactional(readOnly = true)
     public ResponseEntity<Page<PublicBlogController.PublicBlogSummary>> getMyBookmarks(
             Principal principal,
@@ -92,6 +96,7 @@ public class BookmarkController {
     }
     
     @GetMapping("/ids")
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN', 'MASTER_ADMIN')")
     @Transactional(readOnly = true)
     public ResponseEntity<List<UUID>> getMyBookmarkedBlogIds(Principal principal) {
         UUID userId = UUID.fromString(principal.getName());

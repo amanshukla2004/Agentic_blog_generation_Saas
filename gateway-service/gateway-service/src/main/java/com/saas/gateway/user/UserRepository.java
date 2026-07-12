@@ -15,6 +15,7 @@ import com.saas.gateway.system.AuthorStat;
 @Repository
 public interface UserRepository extends JpaRepository<User, UUID> {
     Optional<User> findByEmail(String email);
+    Optional<User> findByUsernameIgnoreCase(String username);
     boolean existsByUsername(String username);
 
     @Query("SELECT new com.saas.gateway.system.AuthorStat(u.id, u.email, u.username, COUNT(b.id), COALESCE(SUM(b.viewCount), 0)) " +
@@ -31,6 +32,9 @@ public interface UserRepository extends JpaRepository<User, UUID> {
 
     @Transactional
     @Modifying
-    @Query("UPDATE User u SET u.generationsCount = u.generationsCount - 1 WHERE u.id = :id")
+    @Query("UPDATE User u SET u.generationsCount = u.generationsCount - 1 WHERE u.id = :id AND u.generationsCount > 0")
     void decrementQuota(@Param("id") UUID id);
+
+    @Query("SELECT COALESCE(SUM(u.generationsCount), 0) FROM User u")
+    long sumGenerationsCount();
 }

@@ -23,4 +23,9 @@ public interface BlogRepository extends JpaRepository<BlogDraft, UUID> {
     Optional<BlogDraft> findByIdAndUserId(UUID id, UUID userId);
     
     long countByStatus(Status status);
+
+    @org.springframework.data.jpa.repository.Modifying
+    @org.springframework.transaction.annotation.Transactional
+    @org.springframework.data.jpa.repository.Query("UPDATE BlogDraft b SET b.viewCount = b.viewCount + 1 WHERE b.id = :id")
+    void incrementViewCount(@org.springframework.data.repository.query.Param("id") UUID id);
 }

@@ -190,8 +190,8 @@ public class PublicBlogController {
     public ResponseEntity<BlogResponseDTO> getBlogBySlug(@PathVariable String slug) {
         return blogRepository.findBySlugAndStatus(slug, Status.PUBLISHED)
                 .map(blog -> {
-                    blog.setViewCount(blog.getViewCount() + 1);
-                    blogRepository.save(blog);
+                    blogRepository.incrementViewCount(blog.getId());
+                    blog.setViewCount(blog.getViewCount() + 1); // Update in-memory for response
                     return BlogResponseDTO.fromEntity(blog);
                 })
                 .map(ResponseEntity::ok)

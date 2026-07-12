@@ -14,7 +14,7 @@ import java.util.Map;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/api/v1/admin/blogs")
+@RequestMapping("/api/v1/admin")
 public class AdminController {
 
     private final BlogRepository blogRepository;
@@ -23,7 +23,7 @@ public class AdminController {
         this.blogRepository = blogRepository;
     }
 
-    @GetMapping
+    @GetMapping("/blogs")
     @PreAuthorize("hasRole('MASTER_ADMIN')")
     @Transactional(readOnly = true)
     public ResponseEntity<List<BlogResponseDTO>> getAllBlogs() {
@@ -33,7 +33,7 @@ public class AdminController {
         return ResponseEntity.ok(dtos);
     }
 
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/blogs/{id}")
     @PreAuthorize("hasRole('MASTER_ADMIN')")
     public ResponseEntity<Void> deleteBlog(@PathVariable UUID id) {
         if (!blogRepository.existsById(id)) {
@@ -43,7 +43,7 @@ public class AdminController {
         return ResponseEntity.noContent().build();
     }
 
-    @PutMapping("/{id}/publish")
+    @PutMapping("/blogs/{id}/publish")
     @PreAuthorize("hasRole('MASTER_ADMIN')")
     public ResponseEntity<BlogResponseDTO> publishBlog(@PathVariable UUID id, @RequestBody Map<String, String> body) {
         String customSeo = body.get("seoDescription");

@@ -71,7 +71,10 @@ public class AuthController {
     }
 
     @PostMapping("/reset-password")
-    public ResponseEntity<java.util.Map<String, String>> resetPassword(@RequestParam String email, @RequestParam String otp, @RequestParam String newPassword) {
+    public ResponseEntity<java.util.Map<String, String>> resetPassword(@RequestBody java.util.Map<String, String> body) {
+        String email = body.get("email");
+        String otp = body.get("otp");
+        String newPassword = body.get("newPassword");
         log.info("Received reset password request for email: {}", email);
         passwordResetService.resetPassword(email, otp, newPassword);
         return ResponseEntity.ok(java.util.Map.of("message", "Password successfully reset."));

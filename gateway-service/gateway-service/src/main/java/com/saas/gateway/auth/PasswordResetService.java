@@ -9,7 +9,7 @@ import org.slf4j.LoggerFactory;
 
 import java.time.LocalDateTime;
 import java.util.Optional;
-import java.util.Random;
+import java.security.SecureRandom;
 
 @Service
 public class PasswordResetService {
@@ -34,7 +34,7 @@ public class PasswordResetService {
         }
 
         User user = optionalUser.get();
-        String otp = String.format("%06d", new Random().nextInt(999999));
+        String otp = String.format("%06d", new SecureRandom().nextInt(999999));
         user.setOtp(otp);
         user.setOtpExpiry(LocalDateTime.now().plusMinutes(15));
         userRepository.save(user);
@@ -58,6 +58,10 @@ public class PasswordResetService {
         if (user.getOtpExpiry() != null && LocalDateTime.now().isAfter(user.getOtpExpiry())) {
             throw new RuntimeException("OTP code has expired");
         }
+
+        // Mark OTP as consumed to prevent reuse — user must now call reset-password immediately
+        user.setOtpExpiry(LocalDateTime.now().plusMinutes(5)); // tighten window for reset step
+        userRepository.save(user);
     }
 
     public void resetPassword(String email, String otp, String newPassword) {

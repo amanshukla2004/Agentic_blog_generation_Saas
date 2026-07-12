@@ -19,10 +19,10 @@ public class DatabaseSeeder implements CommandLineRunner {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     
-    @Value("${app.security.master.email:master@admin.com}")
+    @Value("${app.security.master.email}")
     private String masterEmail;
     
-    @Value("${app.security.master.password:supersecretmasterpassword}")
+    @Value("${app.security.master.password}")
     private String masterPassword;
 
     public DatabaseSeeder(SystemPromptRepository systemPromptRepository,
@@ -89,8 +89,16 @@ public class DatabaseSeeder implements CommandLineRunner {
             masterUser.setSubscriptionTier(SubscriptionTier.PRO);
             masterUser.setGenerationsCount(0);
             masterUser.setIsActive(true);
+            masterUser.setIsVerified(true);
             userRepository.save(masterUser);
             System.out.println("Seeded Master Admin User: " + masterEmail);
+        } else {
+            User existing = existingMaster.get();
+            if (!Boolean.TRUE.equals(existing.getIsVerified())) {
+                existing.setIsVerified(true);
+                userRepository.save(existing);
+                System.out.println("Verified existing Master Admin User: " + masterEmail);
+            }
         }
     }
 }

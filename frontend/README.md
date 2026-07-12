@@ -26,9 +26,9 @@ flowchart TD
     
     subgraph Frontend Client
         UI --> Router[React Router v7]
-        Router -->|RBAC Validation| Views(Pages: Feed, Dashboard, Generator)
+        Router -->|RBAC Validation| Views[Pages: Feed, Dashboard, Generator]
         
-        Views <--> Store[Redux Store (State)]
+        Views <--> Store[Redux Store]
         Views <--> RTK[RTK Query API Slices]
     end
     
