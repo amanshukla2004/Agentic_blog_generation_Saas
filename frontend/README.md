@@ -54,6 +54,9 @@ We adhere to strict UI/UX guidelines to maintain a premium, tactile, and profess
 - **Hard Bans**: No em-dashes (—), no fake UIs, no decorative colored status dots, and no wrapped CTAs.
 - **Motion**: Tactile feedback on buttons (e.g., `active:scale-95` via Framer Motion and Tailwind) ensures the interface feels responsive and alive without being overwhelming.
 
+> [!NOTE]
+> Following these principles is critical to maintaining the premium feel of the platform.
+
 ---
 
 ## 🛠️ Prerequisites & Setup

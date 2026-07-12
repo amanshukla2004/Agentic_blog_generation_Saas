@@ -2,8 +2,9 @@ package gateway_service;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
+import com.saas.gateway.GatewayApplication;
 
-@SpringBootTest
+@SpringBootTest(classes = GatewayApplication.class)
 class GatewayServiceApplicationTests {
 
 	@Test

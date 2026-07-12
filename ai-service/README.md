@@ -59,8 +59,12 @@ Follow these steps to set up the microservice locally:
 
 ## 🔐 Environment Variables
 
-Create a `.env` file in the root of the `ai-service` directory. 
-**⚠️ NEVER commit this file to version control.**
+## 🔐 Environment Variables
+
+> [!CAUTION]
+> **NEVER commit this file to version control.**
+
+Create a `.env` file in the root of the `ai-service` directory:
 
 ```env
 # Required: Your Groq API key for LLM generation
@@ -80,7 +84,9 @@ To start the FastAPI server locally with hot-reloading enabled, use the exact Uv
 ```bash
 uvicorn app.main:app --reload --port 8000
 ```
-*(Note: If you run into import issues, ensure you prefix the command with `python -m uvicorn ...` if your virtual environment is not correctly in your PATH)*
+
+> [!TIP]
+> If you run into import issues, ensure you prefix the command with `python -m uvicorn ...` if your virtual environment is not correctly in your PATH.
 
 ## 📚 API Reference
 

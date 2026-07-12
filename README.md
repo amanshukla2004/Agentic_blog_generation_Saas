@@ -1,14 +1,18 @@
 # 🚀 blogWho
 
 <p align="center">
-  <img src="https://img.shields.io/badge/React-18-61DAFB?logo=react&logoColor=black" alt="React" />
-  <img src="https://img.shields.io/badge/Spring%2BBoot-3.x-6DB33F?logo=spring" alt="Spring Boot" />
+  <img src="https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=black" alt="React" />
+  <img src="https://img.shields.io/badge/Spring%2BBoot-4.x-6DB33F?logo=spring" alt="Spring Boot" />
   <img src="https://img.shields.io/badge/FastAPI-0.100%2B-009688.svg?logo=fastapi" alt="FastAPI" />
   <img src="https://img.shields.io/badge/PostgreSQL-15%2B-336791?logo=postgresql" alt="PostgreSQL" />
   <img src="https://img.shields.io/badge/License-MIT-green.svg" alt="License" />
 </p>
 
 The AI Blogging SaaS Platform is a modern 3-tier microservice architecture designed to empower technical writers. It allows users to effortlessly generate highly structured, professional blog posts (complete with Mermaid diagrams) from raw text, PDFs, or external URLs using advanced AI models, manage their drafts securely, and publish them directly to a public community feed.
+
+> [!TIP]
+> **Experience the Magic**
+> Watch our platform in action below! From prompt to publication, witness seamless AI-driven blog generation.
 
 ## 📺 Visual Proof
 
@@ -46,12 +50,12 @@ flowchart TD
 ## 💻 Tech Stack Breakdown
 
 - **Frontend Layer**:
-  - React 18 & Vite
+  - React 19 & Vite 8
   - Tailwind CSS v4
-  - Zustand (State Management)
+  - Redux Toolkit (State Management)
 - **Backend / API Gateway**:
-  - Java 17
-  - Spring Boot 3
+  - Java 21
+  - Spring Boot 4.x
   - Spring Security (JWT-based RBAC)
   - PostgreSQL (Relational Database)
 - **AI & Data Layer**:
@@ -63,13 +67,14 @@ flowchart TD
 
 To run this platform locally, ensure you have the following installed globally on your machine:
 - **Node.js** (v18+)
-- **Java JDK** (17+)
+- **Java JDK** (21+)
 - **Python** (3.10+)
 - **PostgreSQL** (14+)
 
 ## 🔐 Global Environment Variables
 
-Create the necessary `.env` files across your services based on this consolidated `.env.example`. This covers the required configuration for the entire platform so you can see exactly what needs to be configured:
+> [!IMPORTANT]
+> Create the necessary `.env` files across your services based on this consolidated `.env.example`. This covers the required configuration for the entire platform so you can see exactly what needs to be configured:
 
 ```env
 # ----------------------------------------
@@ -117,9 +122,18 @@ uvicorn app.main:app --reload --port 8000
 
 ### 3. Run the Gateway Service (Spring Boot)
 Open a new terminal window:
+
+> [!WARNING]
+> **Windows Users:** Use `.\mvnw.cmd` instead of `./mvnw` to run the Maven wrapper.
+
 ```bash
 cd gateway-service/gateway-service
+
+# For Mac/Linux
 ./mvnw spring-boot:run
+
+# For Windows (PowerShell/CMD)
+.\mvnw.cmd spring-boot:run
 ```
 
 ### 4. Run the Frontend (React)

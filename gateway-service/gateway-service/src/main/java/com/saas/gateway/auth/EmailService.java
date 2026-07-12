@@ -176,7 +176,7 @@ public class EmailService {
         sendEmail(to, "Reset password for blogWho", otpEmail);
     }
 
-    @Value("${spring.mail.username:onboarding@resend.dev}")
+    @Value("${resend.from.email:${RESEND_FROM_EMAIL:onboarding@resend.dev}}")
     private String fromEmail;
 
     private void sendEmail(String to, String subject, String htmlContent) {

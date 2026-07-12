@@ -14,17 +14,6 @@ spring:
         dialect: org.hibernate.dialect.PostgreSQLDialect
         format_sql: true
     show-sql: true
-  mail:
-    host: ${SMTP_HOST:smtp.gmail.com}
-    port: ${SMTP_PORT:587}
-    username: ${SMTP_USERNAME}
-    password: ${SMTP_PASSWORD}
-    properties:
-      mail:
-        smtp:
-          auth: true
-          starttls:
-            enable: true
 
 server:
   port: 8080
@@ -38,8 +27,8 @@ app:
       expiration-ms: 86400000 # 24 hours
     internal-secret: ${INTERNAL_SECRET:my-super-secret-internal-key-for-ai-worker}
     master:
-      email: ${MASTER_ADMIN_EMAIL}
-      password: ${MASTER_ADMIN_PASSWORD}
+      email: ${MASTER_ADMIN_EMAIL:master@admin.com}
+      password: ${MASTER_ADMIN_PASSWORD:supersecretmasterpassword}
   frontend:
     url: ${FRONTEND_URL:http://localhost:5173}
 

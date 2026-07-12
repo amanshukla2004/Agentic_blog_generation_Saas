@@ -1,8 +1,8 @@
 # 🛡️ Core API Gateway (Spring Boot)
 
 <p align="center">
-  <img src="https://img.shields.io/badge/Java-17%2B-ED8B00?logo=java" alt="Java Version" />
-  <img src="https://img.shields.io/badge/Spring%2BBoot-3.x-6DB33F?logo=spring" alt="Spring Boot" />
+  <img src="https://img.shields.io/badge/Java-21%2B-ED8B00?logo=java" alt="Java Version" />
+  <img src="https://img.shields.io/badge/Spring%2BBoot-4.x-6DB33F?logo=spring" alt="Spring Boot" />
   <img src="https://img.shields.io/badge/PostgreSQL-15%2B-336791?logo=postgresql" alt="PostgreSQL" />
   <img src="https://img.shields.io/badge/Spring%20Security-6.x-6DB33F?logo=springsecurity" alt="Spring Security" />
   <img src="https://img.shields.io/badge/license-MIT-green.svg" alt="License" />
@@ -35,12 +35,14 @@ flowchart TD
 ## 🛠️ Prerequisites & Setup
 
 Ensure the following tools are installed on your system:
-- **Java JDK 17+**
+- **Java JDK 21+**
 - **PostgreSQL 14+**
 - **Maven** (optional, as the Maven Wrapper `./mvnw` is provided)
 
 **Database Initialization:**
-Before running the application, you must create the database in your local PostgreSQL instance:
+
+> [!IMPORTANT]
+> Before running the application, you must create the database in your local PostgreSQL instance:
 ```sql
 CREATE DATABASE blog_saas_db;
 ```
@@ -72,13 +74,25 @@ AI_SERVICE_URL=http://127.0.0.1:8000
 Use the provided Maven Wrapper to compile and run the application without needing a global Maven installation.
 
 1. **Clean and compile the project:**
+
+> [!WARNING]
+> **Windows Users:** Use `.\mvnw.cmd` instead of `./mvnw` to run the Maven wrapper.
+
    ```bash
+   # For Mac/Linux
    ./mvnw clean install -DskipTests
+
+   # For Windows (PowerShell/CMD)
+   .\mvnw.cmd clean install -DskipTests
    ```
 
 2. **Run the application locally:**
    ```bash
+   # For Mac/Linux
    ./mvnw spring-boot:run
+
+   # For Windows (PowerShell/CMD)
+   .\mvnw.cmd spring-boot:run
    ```
 
 The Gateway Service will be available at `http://localhost:8080`.
