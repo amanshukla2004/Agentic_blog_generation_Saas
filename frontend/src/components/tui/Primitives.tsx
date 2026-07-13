@@ -245,3 +245,92 @@ export const ThinkingDots = () => {
   
   return <span className="inline-block w-4 text-left font-mono">{dots[frame]}</span>;
 };
+
+// TUI SHIMMER / LOADING SKELETON
+export const TuiShimmer = ({ width = 40, className = '' }: { width?: number; className?: string }) => {
+  const [position, setPosition] = React.useState(0);
+  
+  React.useEffect(() => {
+    // Move the "shimmer" head across the width
+    const interval = setInterval(() => {
+      setPosition(p => (p + 1) % (width + 5)); // +5 so it sweeps off screen before looping
+    }, 50);
+    return () => clearInterval(interval);
+  }, [width]);
+
+  // We build a string of light shade blocks '░'
+  // And overlay a "bright" spot '█▓▒' at the current position
+  let blocks = Array(width).fill('░');
+  
+  // The sweeping head
+  if (position - 2 >= 0 && position - 2 < width) blocks[position - 2] = '▒';
+  if (position - 1 >= 0 && position - 1 < width) blocks[position - 1] = '▓';
+  if (position >= 0 && position < width) blocks[position] = '█';
+  if (position + 1 >= 0 && position + 1 < width) blocks[position + 1] = '▓';
+  if (position + 2 >= 0 && position + 2 < width) blocks[position + 2] = '▒';
+
+  return (
+    <div className={`font-mono text-secondary flex w-full select-none overflow-hidden ${className}`}>
+      <span>{blocks.join('')}</span>
+    </div>
+  );
+};
+
+// TUI PAGINATION
+export const TuiPagination = ({ currentPage, totalPages, onPageChange, className = '' }: any) => {
+  return (
+    <div className={`flex items-center gap-4 font-mono text-sm select-none ${className}`}>
+      <button 
+        onClick={() => onPageChange(0)} 
+        disabled={currentPage === 0}
+        className="text-secondary hover:text-primary disabled:opacity-30 disabled:cursor-not-allowed"
+      >
+        [&#60;&#60;]
+      </button>
+      <button 
+        onClick={() => onPageChange(currentPage - 1)} 
+        disabled={currentPage === 0}
+        className="text-secondary hover:text-primary disabled:opacity-30 disabled:cursor-not-allowed"
+      >
+        [&#60;]
+      </button>
+      
+      <span className="text-fg font-bold tracking-widest">
+        {currentPage + 1} <span className="text-secondary font-normal">/ {totalPages || 1}</span>
+      </span>
+
+      <button 
+        onClick={() => onPageChange(currentPage + 1)} 
+        disabled={currentPage >= totalPages - 1}
+        className="text-secondary hover:text-primary disabled:opacity-30 disabled:cursor-not-allowed"
+      >
+        [&#62;]
+      </button>
+      <button 
+        onClick={() => onPageChange(totalPages - 1)} 
+        disabled={currentPage >= totalPages - 1}
+        className="text-secondary hover:text-primary disabled:opacity-30 disabled:cursor-not-allowed"
+      >
+        [&#62;&#62;]
+      </button>
+    </div>
+  );
+};
+
+// TUI CHECKBOX
+export const TuiCheckbox = ({ checked, onChange, label, className = '' }: any) => {
+  return (
+    <label className={`flex items-center gap-2 cursor-pointer font-mono select-none ${className}`}>
+      <input 
+        type="checkbox" 
+        checked={checked} 
+        onChange={(e) => onChange(e.target.checked)} 
+        className="hidden"
+      />
+      <span className={checked ? 'text-primary font-bold' : 'text-secondary'}>
+        [{checked ? 'x' : ' '}]
+      </span>
+      {label && <span className={checked ? 'text-fg' : 'text-secondary'}>{label}</span>}
+    </label>
+  );
+};

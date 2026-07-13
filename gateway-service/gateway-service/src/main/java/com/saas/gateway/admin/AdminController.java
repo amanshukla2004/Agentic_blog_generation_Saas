@@ -9,6 +9,10 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -33,6 +37,26 @@ public class AdminController {
         return ResponseEntity.ok(dtos);
     }
 
+    @GetMapping("/blogs/all-paginated")
+    @PreAuthorize("hasRole('MASTER_ADMIN')")
+    @Transactional(readOnly = true)
+    public ResponseEntity<Page<BlogResponseDTO>> getAllBlogsPaginated(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size,
+            @RequestParam(defaultValue = "") String search) {
+        
+        Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
+        Page<BlogDraft> blogsPage;
+        
+        if (search != null && !search.trim().isEmpty()) {
+            blogsPage = blogRepository.findByTitleContainingIgnoreCase(search.trim(), pageable);
+        } else {
+            blogsPage = blogRepository.findAll(pageable);
+        }
+        
+        return ResponseEntity.ok(blogsPage.map(BlogResponseDTO::fromEntity));
+    }
+
     @DeleteMapping("/blogs/{id}")
     @PreAuthorize("hasRole('MASTER_ADMIN')")
     public ResponseEntity<Void> deleteBlog(@PathVariable UUID id) {
@@ -40,6 +64,16 @@ public class AdminController {
             return ResponseEntity.notFound().build();
         }
         blogRepository.deleteById(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/blogs/bulk-delete")
+    @PreAuthorize("hasRole('MASTER_ADMIN')")
+    @Transactional
+    public ResponseEntity<Void> bulkDeleteBlogs(@RequestBody List<UUID> ids) {
+        if (ids != null && !ids.isEmpty()) {
+            blogRepository.deleteAllByIds(ids);
+        }
         return ResponseEntity.noContent().build();
     }
 

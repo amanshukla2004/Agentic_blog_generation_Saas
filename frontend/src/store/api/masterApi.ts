@@ -68,13 +68,28 @@ export interface PaginatedBlogs {
   number: number;
 }
 
+export interface PaginatedUsers {
+  content: User[];
+  totalPages: number;
+  totalElements: number;
+  number: number;
+}
+
 export const masterApi = createApi({
   reducerPath: 'masterApi',
   baseQuery: baseQuery,
   tagTypes: ['User', 'SystemErrorLog', 'SystemPrompt', 'AuthorStat', 'Blog', 'SystemSetting'],
   endpoints: (builder) => ({
-    getUsers: builder.query<User[], void>({
-      query: () => '/master/users',
+    getUsers: builder.query<PaginatedUsers, { page?: number; size?: number; search?: string } | void>({
+      query: (args) => {
+        const params = new URLSearchParams();
+        if (args) {
+          if (args.page !== undefined) params.append('page', args.page.toString());
+          if (args.size !== undefined) params.append('size', args.size.toString());
+          if (args.search) params.append('search', args.search);
+        }
+        return `/master/users?${params.toString()}`;
+      },
       providesTags: ['User'],
     }),
     resetUserQuota: builder.mutation<User, string>({
@@ -130,8 +145,9 @@ export const masterApi = createApi({
       query: () => '/master/authors/stats',
       providesTags: ['AuthorStat'],
     }),
-    getAllBlogs: builder.query<PaginatedBlogs, { page: number; size: number }>({
-      query: ({ page, size }) => `/admin/blogs/all-paginated?page=${page}&size=${size}`,
+    getAllBlogs: builder.query<PaginatedBlogs, { page: number; size: number; search?: string }>({
+      query: ({ page, size, search = '' }) => 
+        `/admin/blogs/all-paginated?page=${page}&size=${size}&search=${encodeURIComponent(search)}`,
       providesTags: ['Blog'],
     }),
     toggleStaffPick: builder.mutation<void, { id: string; isStaffPick: boolean }>({
@@ -146,6 +162,14 @@ export const masterApi = createApi({
       query: (id) => ({
         url: `/admin/blogs/${id}`,
         method: 'DELETE',
+      }),
+      invalidatesTags: ['Blog', 'AuthorStat'],
+    }),
+    bulkDeleteBlogs: builder.mutation<void, string[]>({
+      query: (ids) => ({
+        url: `/admin/blogs/bulk-delete`,
+        method: 'POST',
+        body: ids,
       }),
       invalidatesTags: ['Blog', 'AuthorStat'],
     }),
@@ -188,6 +212,7 @@ export const {
   useGetAllBlogsQuery,
   useToggleStaffPickMutation,
   useDeleteBlogMutation,
+  useBulkDeleteBlogsMutation,
   useGetSystemSettingsQuery,
   useUpdateSettingMutation,
   useGetSystemStatsQuery,
