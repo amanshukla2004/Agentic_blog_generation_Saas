@@ -37,15 +37,15 @@ export const MasterDashboard: React.FC = () => {
     }
   }, [settings]);
 
-  const tabs: { id: Tab; label: string }[] = [
-    { id: 'OVERVIEW', label: 'System Overview' },
-    { id: 'USERS', label: 'User Management' },
-    { id: 'AUTHORS', label: 'Author Stats' },
-    { id: 'BLOGS', label: 'All Blogs' },
-    { id: 'REVIEWS', label: 'Review Requests' },
-    { id: 'LOGS', label: 'System Logs' },
-    { id: 'PROMPTS', label: 'AI Prompts' },
-    { id: 'SETTINGS', label: 'Settings' }
+  const tabs: Tab[] = [
+    'OVERVIEW',
+    'USERS',
+    'AUTHORS',
+    'BLOGS',
+    'REVIEWS',
+    'LOGS',
+    'PROMPTS',
+    'SETTINGS'
   ];
 
   return (
@@ -58,7 +58,7 @@ export const MasterDashboard: React.FC = () => {
           </div>
         </div>
 
-        <Tabs tabs={tabs} activeTab={activeTab} onChange={(id: any) => setActiveTab(id as Tab)} />
+        <Tabs tabs={tabs} activeTab={activeTab} onTabChange={(id: any) => setActiveTab(id as Tab)} />
 
         <div className="mt-8 border border-border p-6 bg-surface/30">
           
