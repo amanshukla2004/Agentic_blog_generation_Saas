@@ -91,33 +91,6 @@ flowchart TD
     RTK -->|HTTP Requests + Bearer Token| Gateway[(Spring Boot API Gateway)]
 ```
 
-### Core Technologies
-- **Global State**: Redux Toolkit with 7 separate RTK Query API slices (40+ endpoints total) and 1 auth state slice
-- **Data Fetching**: RTK Query `fetchBaseQuery` with `prepareHeaders` that auto-injects JWT from Redux state. No raw Axios calls.
-- **Routing**: React Router v7 with `ProtectedRoute` wrappers and role-aware navigation
-- **Styling**: Tailwind CSS v4 with a custom TUI (Terminal UI) component library
-- **Rich Rendering**: `react-markdown` + `remark-gfm` + `react-syntax-highlighter` (VS Code Dark+ theme) + **client-side Mermaid.js** diagrams
-- **Animations**: Framer Motion for layout transitions and micro-interactions
-
-### 🎨 Design System — Custom TUI Components (`Primitives.tsx`)
-The frontend uses a 248-line custom component library with a terminal-inspired aesthetic:
-- **Button**: Ghost/Accent/Danger variants with hover arrow animation (`▸`)
-- **Panel**: Bordered card with floating title label
-- **Table**: Sortable data tables for admin views
-- **Tabs**: Active-tab highlighting with border styling
-- **Progress**: ASCII block progress bar (`▕████░░░░▏ 65%`)
-- **StatusBadge**: Color-coded status indicators (✓ SUCCESS, ✗ ERROR, ○ WARNING)
-- **RoleBadge**: Color-coded role tags (USER, AUTHOR, MASTER ADMIN)
-- **ThinkingDots**: Animated loading indicator (`· ·· ···`)
-- **Modal**: Overlay dialog for confirmations and forms
-- **TopNav**: Navigation bar with Support modal
-
-### 🎨 "Anti-Slop" Design Principles
-- **Typography**: Clean legibility using sans-serif system fonts
-- **Palette**: Neutral base (Zinc) with accent colors. No pure black — softer darks (`#09090b`)
-- **Hard Bans**: No em-dashes, no fake UIs, no decorative status dots, no wrapped CTAs
-- **Motion**: Tactile feedback (`active:scale-95`) without being overwhelming
-
 ### 📂 Frontend Project Structure
 
 ```text
