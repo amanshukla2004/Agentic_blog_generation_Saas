@@ -40,6 +40,7 @@
 ## 🏗️ High-Level System Architecture
 
 ```mermaid
+%%{init: {'theme': 'base', 'themeVariables': { 'primaryColor': '#ffb3ba', 'secondaryColor': '#ffdfba', 'tertiaryColor': '#ffffba', 'mainBkg': '#bae1ff', 'nodeBorder': '#1e90ff', 'clusterBkg': '#f3e5f5', 'clusterBorder': '#8e24aa', 'lineColor': '#ff6b6b'}}}%%
 flowchart LR
     subgraph Frontend
         A[React 19 + Tailwind v4 + Redux/RTK Query]
@@ -77,6 +78,7 @@ This is the user-facing layer of the platform. It provides a vibrant community f
 ### 🏗️ Architecture & State Flow
 
 ```mermaid
+%%{init: {'theme': 'base', 'themeVariables': { 'primaryColor': '#ffb3ba', 'secondaryColor': '#ffdfba', 'tertiaryColor': '#ffffba', 'mainBkg': '#bae1ff', 'nodeBorder': '#1e90ff', 'clusterBkg': '#f3e5f5', 'clusterBorder': '#8e24aa', 'lineColor': '#ff6b6b'}}}%%
 flowchart TD
     User([User]) --> UI[React UI Components]
     
@@ -188,6 +190,7 @@ This service is the central nervous system of the platform. It manages JWT-based
 ### 🏗️ Architecture & Data Flow
 
 ```mermaid
+%%{init: {'theme': 'base', 'themeVariables': { 'primaryColor': '#ffb3ba', 'secondaryColor': '#ffdfba', 'tertiaryColor': '#ffffba', 'mainBkg': '#bae1ff', 'nodeBorder': '#1e90ff', 'clusterBkg': '#f3e5f5', 'clusterBorder': '#8e24aa', 'lineColor': '#ff6b6b'}}}%%
 flowchart TD
     Client[React Frontend] -->|HTTP Requests| Gateway[Spring Boot Gateway]
     
@@ -298,6 +301,7 @@ Sitting securely behind the Spring Boot API Gateway, this microservice processes
 ### 🏗️ Architecture & Pipeline Flow
 
 ```mermaid
+%%{init: {'theme': 'base', 'themeVariables': { 'primaryColor': '#ffb3ba', 'secondaryColor': '#ffdfba', 'tertiaryColor': '#ffffba', 'mainBkg': '#bae1ff', 'nodeBorder': '#1e90ff', 'clusterBkg': '#f3e5f5', 'clusterBorder': '#8e24aa', 'lineColor': '#ff6b6b'}}}%%
 sequenceDiagram
     participant Gateway as Spring Boot Gateway
     participant FastAPI as AI Service (FastAPI)

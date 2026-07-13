@@ -9,6 +9,7 @@ The user-facing layer of the Agentic Blog Generation SaaS platform. Provides a c
 ## 🏗️ Architecture
 
 ```mermaid
+%%{init: {'theme': 'base', 'themeVariables': { 'primaryColor': '#ffb3ba', 'secondaryColor': '#ffdfba', 'tertiaryColor': '#ffffba', 'mainBkg': '#bae1ff', 'nodeBorder': '#1e90ff', 'clusterBkg': '#f3e5f5', 'clusterBorder': '#8e24aa', 'lineColor': '#ff6b6b'}}}%%
 flowchart TD
     User([User]) --> Router[React Router v7 + ProtectedRoute]
     Router -->|Role Validation| Views[16 Pages]

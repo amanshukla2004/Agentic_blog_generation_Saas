@@ -9,6 +9,7 @@ The central API Gateway and business logic service for the Agentic Blog Generati
 ## 🏗️ Architecture
 
 ```mermaid
+%%{init: {'theme': 'base', 'themeVariables': { 'primaryColor': '#ffb3ba', 'secondaryColor': '#ffdfba', 'tertiaryColor': '#ffffba', 'mainBkg': '#bae1ff', 'nodeBorder': '#1e90ff', 'clusterBkg': '#f3e5f5', 'clusterBorder': '#8e24aa', 'lineColor': '#ff6b6b'}}}%%
 flowchart TD
     Client[React Client] -->|HTTP + Bearer JWT| RateLimit[RateLimitFilter: 15 req/60s]
     RateLimit --> JWTFilter[JwtAuthenticationFilter: Token → UUID Principal]

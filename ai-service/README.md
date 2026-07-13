@@ -9,6 +9,7 @@ The AI orchestration engine for the Agentic Blog Generation SaaS. This microserv
 ## 🏗️ Architecture
 
 ```mermaid
+%%{init: {'theme': 'base', 'themeVariables': { 'primaryColor': '#ffb3ba', 'secondaryColor': '#ffdfba', 'tertiaryColor': '#ffffba', 'mainBkg': '#bae1ff', 'nodeBorder': '#1e90ff', 'clusterBkg': '#f3e5f5', 'clusterBorder': '#8e24aa', 'lineColor': '#ff6b6b'}}}%%
 sequenceDiagram
     participant Gateway as Spring Boot Gateway
     participant API as FastAPI (/generate-multimodal)
