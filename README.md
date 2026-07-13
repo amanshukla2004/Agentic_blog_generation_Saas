@@ -82,7 +82,7 @@ flowchart TD
     
     subgraph Frontend Client
         UI --> Router[React Router v7 with ProtectedRoute]
-        Router -->|RBAC Validation| Views[16 Pages]
+        Router -->|RBAC Validation| Views
         
         Views <--> Store[Redux Store: 7 API Slices + Auth Slice]
         Store <-->|fetchBaseQuery + Auto JWT Injection| RTK[RTK Query Cache Layer]
@@ -104,19 +104,19 @@ src/
 │   │   ├── Navbar.tsx         # Main navigation
 │   │   └── TopBar.tsx         # Role-aware top bar
 │   ├── tui/
-│   │   └── Primitives.tsx     # Full TUI design system (248 lines)
+│   │   └── Primitives.tsx     # Full TUI design system 
 │   └── ui/
 │       ├── Button.tsx         # Simple button
 │       ├── Card.tsx           # Simple card
 │       ├── Input.tsx          # Styled input
 │       └── Mermaid.tsx        # Client-side Mermaid.js renderer
 ├── pages/
-│   ├── FeedLayout.tsx         # 3-column public feed (229 lines)
+│   ├── FeedLayout.tsx         # 3-column public feed 
 │   ├── BlogViewer.tsx         # Full blog reader with Mermaid/code rendering
 │   ├── Dashboard.tsx          # User blog management grid
-│   ├── Editor.tsx             # Split-pane markdown editor (308 lines)
-│   ├── Generate.tsx           # Multi-modal AI generation form
-│   ├── MasterDashboard.tsx    # 8-tab Master Admin panel (492 lines)
+│   ├── Editor.tsx             # Split-pane markdown editor 
+│   ├── Generate.tsx           # Multi-modal AI generation 
+│   ├── MasterDashboard.tsx    # 8-tab Master Admin panel
 │   ├── AdminDashboard.tsx     # Tier-2 admin dashboard
 │   ├── AuthorDashboard.tsx    # Author blog dashboard
 │   ├── Login.tsx              # Login with JWT storage
@@ -244,7 +244,7 @@ DB_USERNAME=postgres
 DB_PASSWORD=your_secure_password
 
 # Authentication (JWT)
-JWT_SECRET=404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970
+JWT_SECRET=...
 INTERNAL_SECRET=my-super-secret-internal-key-for-ai-worker
 
 # Email / Brevo Configuration
