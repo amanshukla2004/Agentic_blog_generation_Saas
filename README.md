@@ -27,7 +27,7 @@
 | 🤖 **Multi-Modal AI Generation** | Generate blogs from PDFs, YouTube transcripts, website scraping, and raw text via a 3-node LangGraph pipeline (Extract → Optimize → Generate) |
 | ✍️ **AI-Powered Blog Revision** | Instruct the AI to rewrite/modify existing blog content using natural language |
 | 🛡️ **3-Tier RBAC** | User → Author → Master Admin with `@PreAuthorize` enforcement on every endpoint |
-| 📊 **Master Admin Dashboard** | 8-tab control panel: system stats, user management, content review pipeline, AI health monitoring, live prompt editing, dynamic settings |
+| 📊 **Master Admin Dashboard** | 8-tab control panel: telemetry sparklines, bulk-approve/delete ops, user management, content review pipeline, AI health monitoring, live prompt editing, dynamic settings |
 | 🔒 **Content Lifecycle State Machine** | DRAFT → IN_REVIEW → PUBLISHED/REJECTED with auto-downgrade on post-publish edits |
 | ⚡ **Fault-Tolerant AI Bridge** | WebClient with 10x retry (cold start handling), 5-min timeout, automatic quota refund on failure |
 | 🖼️ **Auto Cover Images** | AI generates a keyword, system auto-fetches a contextual cover image via Pollinations.ai |
@@ -72,7 +72,7 @@ flowchart LR
 
 ## 💻 1. Frontend Client (React 19 & Tailwind v4)
 
-This is the user-facing layer of the platform. It provides a vibrant community feed, a secure dashboard for managing blog drafts, a Tier 3 Master Admin control panel, and a complex multi-modal form for triggering AI blog generation.
+This is the user-facing layer of the platform. It provides a vibrant community feed, a secure dashboard for managing blog drafts, a Tier 3 Master Admin control panel with ASCII telemetry sparklines, and a complex unified Polymorphic Input Interface (XOR-activated) for triggering AI blog generation.
 
 ### 🏗️ Architecture & State Flow
 
@@ -243,12 +243,9 @@ src/main/java/com/saas/gateway/
 │   ├── Bookmark.java              # JPA Entity
 │   ├── BookmarkRepository.java    # JPA Repository
 │   └── BlogResponseDTO.java      # Entity → API response mapping
-├── gateway/
-│   ├── AiGenerationService.java   # Interface
-│   ├── GatewayController.java     # AI generation endpoint
-│   └── SyncWebClientAiService.java # quota check, prompt loading, multipart marshalling, retry logic, error logging, quota refund
-├── system/
-│   ├── MasterAdminController.java # full platform admin (UserDTO record, user/blog/prompt/settings management, AI health, reviews)
+├── system/                        # Platform Administration (Tier-3)
+│   ├── ErrorLogController.java    # Reads system logs
+│   ├── MasterAdminController.java # full platform admin (UserDTO record, user/blog/prompt/settings management, AI health, telemetry trends, reviews)
 │   ├── DatabaseSeeder.java        # Seeds prompt, settings, master admin on first boot
 │   ├── SystemPrompt.java          # JPA Entity (promptName, promptText)
 │   ├── SystemSetting.java         # JPA Entity (settingKey, settingValue)

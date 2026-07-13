@@ -4,7 +4,8 @@ import {
   useGetAllBlogsQuery, 
   useToggleStaffPickMutation, 
   useDeleteBlogMutation,
-  useBulkDeleteBlogsMutation
+  useBulkDeleteBlogsMutation,
+  useBulkApproveBlogsMutation
 } from '../../store/api/masterApi';
 import { Button, Table, StatusBadge, TuiPagination, TuiCheckbox, Input, TuiShimmer } from '../../components/tui/Primitives';
 
@@ -23,6 +24,7 @@ export const BlogsTab: React.FC = () => {
   const [toggleStaffPick] = useToggleStaffPickMutation();
   const [deleteBlog] = useDeleteBlogMutation();
   const [bulkDelete] = useBulkDeleteBlogsMutation();
+  const [bulkApprove] = useBulkApproveBlogsMutation();
 
   const handleToggleStaffPick = async (id: string, currentStatus: boolean) => {
     await toggleStaffPick({ id, isStaffPick: !currentStatus });
@@ -45,6 +47,15 @@ export const BlogsTab: React.FC = () => {
     if (selectedIds.size === 0) return;
     if (window.confirm(`Are you sure you want to delete ${selectedIds.size} blogs?`)) {
       await bulkDelete(Array.from(selectedIds));
+      setSelectedIds(new Set());
+      refetch();
+    }
+  };
+
+  const handleBulkApprove = async () => {
+    if (selectedIds.size === 0) return;
+    if (window.confirm(`Are you sure you want to approve and publish ${selectedIds.size} blogs?`)) {
+      await bulkApprove(Array.from(selectedIds));
       setSelectedIds(new Set());
       refetch();
     }
@@ -149,6 +160,9 @@ export const BlogsTab: React.FC = () => {
         {selectedIds.size > 0 && (
           <div className="flex gap-4 items-center bg-surface border border-border px-4 py-2">
             <span className="text-secondary font-bold text-xs uppercase tracking-widest">{selectedIds.size} Selected</span>
+            <Button variant="accent" onClick={handleBulkApprove} className="text-xs py-1">
+              Bulk Approve
+            </Button>
             <Button variant="danger" onClick={handleBulkDelete} className="text-xs py-1">
               Bulk Delete
             </Button>

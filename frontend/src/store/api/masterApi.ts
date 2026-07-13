@@ -44,6 +44,11 @@ export interface SystemStats {
   totalGenerations: number;
 }
 
+export interface StatsTrends {
+  users: number[];
+  blogs: number[];
+}
+
 export interface AiHealth {
   status: string;
   service: string;
@@ -173,8 +178,19 @@ export const masterApi = createApi({
       }),
       invalidatesTags: ['Blog', 'AuthorStat'],
     }),
+    bulkApproveBlogs: builder.mutation<void, string[]>({
+      query: (ids) => ({
+        url: `/admin/blogs/bulk-approve`,
+        method: 'PUT',
+        body: ids,
+      }),
+      invalidatesTags: ['Blog', 'AuthorStat'],
+    }),
     getSystemStats: builder.query<SystemStats, void>({
       query: () => '/master/stats',
+    }),
+    getStatsTrends: builder.query<StatsTrends, void>({
+      query: () => '/master/stats/trends',
     }),
     getAiHealth: builder.query<AiHealth, void>({
       query: () => '/master/ai-health',
@@ -213,9 +229,11 @@ export const {
   useToggleStaffPickMutation,
   useDeleteBlogMutation,
   useBulkDeleteBlogsMutation,
+  useBulkApproveBlogsMutation,
   useGetSystemSettingsQuery,
   useUpdateSettingMutation,
   useGetSystemStatsQuery,
+  useGetStatsTrendsQuery,
   useGetAiHealthQuery,
   useGetReviewRequestsQuery,
   useAcceptReviewMutation,

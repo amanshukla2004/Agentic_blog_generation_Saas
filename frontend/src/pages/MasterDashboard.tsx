@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { 
   useGetSystemSettingsQuery,
   useGetSystemStatsQuery,
+  useGetStatsTrendsQuery,
   useGetAiHealthQuery
 } from '../store/api/masterApi';
 import { Tabs } from '../components/tui/Primitives';
@@ -22,7 +23,22 @@ export const MasterDashboard: React.FC = () => {
   const [activeTab, setActiveTab] = useState<Tab>('OVERVIEW');
   
   const { data: stats, isLoading: statsLoading } = useGetSystemStatsQuery();
+  const { data: trends, isLoading: trendsLoading } = useGetStatsTrendsQuery();
   const { data: aiHealth, isLoading: aiHealthLoading } = useGetAiHealthQuery();
+
+  const getSparkline = (data?: number[]) => {
+    if (!data || data.length === 0) return '';
+    const min = Math.min(...data);
+    const max = Math.max(...data);
+    const range = max - min;
+    const blocks = [' ', '▂', '▃', '▄', '▅', '▆', '▇', '█'];
+    
+    return data.map(n => {
+      if (range === 0) return blocks[0];
+      const index = Math.round(((n - min) / range) * (blocks.length - 1));
+      return blocks[index];
+    }).join('');
+  };
   const { data: settings } = useGetSystemSettingsQuery();
 
   const [userLimit, setUserLimit] = useState('');
@@ -65,20 +81,28 @@ export const MasterDashboard: React.FC = () => {
           {activeTab === 'OVERVIEW' && (
             <div className="w-full">
               <h2 className="text-md font-bold mb-6 uppercase tracking-widest text-fg">System Health Overview</h2>
-              {statsLoading || aiHealthLoading ? (
+              {statsLoading || aiHealthLoading || trendsLoading ? (
                 <p className="text-secondary uppercase tracking-widest text-xs">Polling system status...</p>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-6 font-mono">
                   <div className="bg-surface border border-border p-6 flex flex-col justify-between">
-                    <h3 className="text-xs uppercase tracking-widest text-secondary mb-2">Total Users</h3>
+                    <div className="flex justify-between items-start mb-2">
+                      <h3 className="text-xs uppercase tracking-widest text-secondary">Total Users</h3>
+                      <span className="text-accent tracking-[2px]">{getSparkline(trends?.users)}</span>
+                    </div>
                     <span className="text-3xl font-bold text-primary">{stats?.totalUsers || 0}</span>
                   </div>
                   <div className="bg-surface border border-border p-6 flex flex-col justify-between">
-                    <h3 className="text-xs uppercase tracking-widest text-secondary mb-2">Total Blogs</h3>
+                    <div className="flex justify-between items-start mb-2">
+                      <h3 className="text-xs uppercase tracking-widest text-secondary">Total Blogs</h3>
+                      <span className="text-accent tracking-[2px]">{getSparkline(trends?.blogs)}</span>
+                    </div>
                     <span className="text-3xl font-bold text-primary">{stats?.totalBlogs || 0}</span>
                   </div>
                   <div className="bg-surface border border-border p-6 flex flex-col justify-between">
-                    <h3 className="text-xs uppercase tracking-widest text-secondary mb-2">Total Generations</h3>
+                    <div className="flex justify-between items-start mb-2">
+                      <h3 className="text-xs uppercase tracking-widest text-secondary">Generations</h3>
+                    </div>
                     <span className="text-3xl font-bold text-primary">{stats?.totalGenerations || 0}</span>
                   </div>
                   <div className="bg-surface border border-border p-6 flex flex-col justify-between">

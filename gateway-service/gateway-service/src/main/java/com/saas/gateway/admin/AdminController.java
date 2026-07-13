@@ -77,6 +77,29 @@ public class AdminController {
         return ResponseEntity.noContent().build();
     }
 
+    @PutMapping("/blogs/bulk-approve")
+    @PreAuthorize("hasRole('MASTER_ADMIN')")
+    @Transactional
+    public ResponseEntity<Void> bulkApproveBlogs(@RequestBody List<UUID> ids) {
+        if (ids != null && !ids.isEmpty()) {
+            List<BlogDraft> blogs = blogRepository.findAllById(ids);
+            for (BlogDraft blog : blogs) {
+                if (blog.getStatus() != Status.PUBLISHED) {
+                    blog.setStatus(Status.PUBLISHED);
+                    if (blog.getSlug() == null || blog.getSlug().isBlank()) {
+                        String title = blog.getTitle();
+                        if (title == null || title.isBlank()) title = "untitled-blog";
+                        String baseSlug = title.toLowerCase().replaceAll("[^a-z0-9\\s]", "").replaceAll("\\s+", "-");
+                        String slug = baseSlug + "-" + blog.getId().toString().substring(0, 8);
+                        blog.setSlug(slug);
+                    }
+                }
+            }
+            blogRepository.saveAll(blogs);
+        }
+        return ResponseEntity.noContent().build();
+    }
+
     @PutMapping("/blogs/{id}/publish")
     @PreAuthorize("hasRole('MASTER_ADMIN')")
     public ResponseEntity<BlogResponseDTO> publishBlog(@PathVariable UUID id, @RequestBody Map<String, String> body) {
