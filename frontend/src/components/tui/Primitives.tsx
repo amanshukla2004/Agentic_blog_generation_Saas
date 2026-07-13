@@ -234,14 +234,14 @@ export const Progress = ({ value, max = 100, className = '' }: any) => {
 // THINKING DOTS
 export const ThinkingDots = () => {
   const [frame, setFrame] = React.useState(0);
-  const frames = ['·  ', '·· ', '···', ' ··', '  ·', '   '];
+  const dots = ['.', '..', '...', ''];
   
   React.useEffect(() => {
     const interval = setInterval(() => {
-      setFrame(f => (f + 1) % frames.length);
+      setFrame(f => (f + 1) % 4);
     }, 300);
     return () => clearInterval(interval);
   }, []);
   
-  return <span className="inline-block font-mono whitespace-pre">{frames[frame]}</span>;
+  return <span className="inline-block w-4 text-left font-mono">{dots[frame]}</span>;
 };
