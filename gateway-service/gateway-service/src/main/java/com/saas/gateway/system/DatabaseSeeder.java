@@ -18,6 +18,7 @@ public class DatabaseSeeder implements CommandLineRunner {
     private final SystemSettingRepository systemSettingRepository;
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final org.springframework.jdbc.core.JdbcTemplate jdbcTemplate;
     
     @Value("${app.security.master.email}")
     private String masterEmail;
@@ -28,15 +29,25 @@ public class DatabaseSeeder implements CommandLineRunner {
     public DatabaseSeeder(SystemPromptRepository systemPromptRepository,
                           SystemSettingRepository systemSettingRepository,
                           UserRepository userRepository,
-                          PasswordEncoder passwordEncoder) {
+                          PasswordEncoder passwordEncoder,
+                          org.springframework.jdbc.core.JdbcTemplate jdbcTemplate) {
         this.systemPromptRepository = systemPromptRepository;
         this.systemSettingRepository = systemSettingRepository;
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
+        this.jdbcTemplate = jdbcTemplate;
     }
 
     @Override
     public void run(String... args) throws Exception {
+        // Fix for Postgres check constraint on Status enum
+        try {
+            jdbcTemplate.execute("ALTER TABLE blog_drafts DROP CONSTRAINT IF EXISTS blog_drafts_status_check");
+            System.out.println("Dropped legacy blog_drafts_status_check constraint");
+        } catch (Exception e) {
+            System.out.println("No legacy blog_drafts_status_check constraint to drop");
+        }
+
         String promptName = "TECH_BLOG_PROMPT";
         Optional<SystemPrompt> existingPrompt = systemPromptRepository.findByPromptName(promptName);
 
