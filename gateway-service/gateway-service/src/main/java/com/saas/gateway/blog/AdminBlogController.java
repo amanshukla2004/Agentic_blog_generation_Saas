@@ -33,38 +33,4 @@ public class AdminBlogController {
         }).orElse(ResponseEntity.notFound().build());
     }
     
-    public record AdminBlogSummary(
-            UUID id,
-            String title,
-            String slug,
-            Status status,
-            java.time.Instant createdAt,
-            String authorEmail,
-            Boolean isStaffPick,
-            Long viewCount
-    ) {}
-
-    @GetMapping("/all-paginated")
-    @PreAuthorize("hasRole('MASTER_ADMIN')")
-    @Transactional(readOnly = true)
-    public ResponseEntity<org.springframework.data.domain.Page<AdminBlogSummary>> getAllBlogs(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size) {
-        
-        org.springframework.data.domain.Pageable pageable = org.springframework.data.domain.PageRequest.of(page, size, org.springframework.data.domain.Sort.by(org.springframework.data.domain.Sort.Direction.DESC, "createdAt"));
-        org.springframework.data.domain.Page<BlogDraft> blogs = blogRepository.findAll(pageable);
-        
-        org.springframework.data.domain.Page<AdminBlogSummary> summaryPage = blogs.map(blog -> new AdminBlogSummary(
-                blog.getId(),
-                blog.getTitle(),
-                blog.getSlug(),
-                blog.getStatus(),
-                blog.getCreatedAt(),
-                blog.getUser() != null ? blog.getUser().getEmail() : "Unknown Author",
-                blog.getIsStaffPick(),
-                blog.getViewCount()
-        ));
-        
-        return ResponseEntity.ok(summaryPage);
-    }
 }

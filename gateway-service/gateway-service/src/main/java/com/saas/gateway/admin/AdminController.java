@@ -107,4 +107,19 @@ public class AdminController {
             return ResponseEntity.ok(BlogResponseDTO.fromEntity(blogRepository.save(blog)));
         }).orElse(ResponseEntity.notFound().build());
     }
+    @PutMapping("/blogs/{id}/staff-pick")
+    @PreAuthorize("hasRole('MASTER_ADMIN')")
+    @Transactional
+    public ResponseEntity<BlogResponseDTO> toggleStaffPick(@PathVariable UUID id, @RequestBody Map<String, Boolean> body) {
+        Boolean isStaffPick = body.get("isStaffPick");
+        if (isStaffPick == null) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        return blogRepository.findById(id).map(blog -> {
+            blog.setIsStaffPick(isStaffPick);
+            blogRepository.save(blog);
+            return ResponseEntity.ok(BlogResponseDTO.fromEntity(blog));
+        }).orElse(ResponseEntity.notFound().build());
+    }
 }
