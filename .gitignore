@@ -100,12 +100,14 @@ DEPLOYMENT_GUIDE.md
 
 
 security_review.md
-
-
-# Ignore AI Prompts
+# Ignore AI Prompts and its contents
 prompts/
+prompts/*
+prompts/TECH_BLOG_PROMPT.txt
 
+
+# Project Documentation Drafts (Optional to ignore)
 linked.md
+resume.md
 PROJECT_DETAILS.md
 PROJECT_REFERENCE.md
-resume.md

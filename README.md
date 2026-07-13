@@ -1,4 +1,4 @@
-# 🚀 Agentic Blog Generation SaaS
+# 🚀 BLOGWHO (agentic blogging platform)
 
 <p align="center">
   <img src="https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=black" alt="React" />
@@ -212,49 +212,6 @@ flowchart TD
     AIBridge <-->|WebClient + Retry + Internal Secret| PythonAI[Python FastAPI Microservice]
 ```
 
-### 📚 Core API Endpoints
-
-**Authentication:** `POST /api/v1/auth/*`
-- `register` → Creates unverified user + sends OTP email via Brevo API
-- `verify-signup` → Verifies OTP, marks user as verified, returns JWT
-- `login` → Validates credentials + verified status, returns JWT
-- `forgot-password` → Generates OTP, sends reset email (anti-enumeration: always returns success)
-- `verify-reset-otp` → Validates OTP for password reset
-- `reset-password` → BCrypt encodes new password
-- `check-username` → Username availability check
-
-**Blog Management:** `/api/v1/blogs/*`
-- `GET /` → Get current user's blogs (IDOR-safe via `findByUserId`)
-- `PUT /{id}` → Update blog markdown/title (**auto-downgrades PUBLISHED → IN_REVIEW**)
-- `POST /{id}/revise` → AI-powered revision (**auto-downgrades PUBLISHED → IN_REVIEW**)
-- `DELETE /{id}` → Delete blog (IDOR-safe via `findByIdAndUserId`)
-- `PUT /{id}/request-review` → Submit for moderation (sets SEO metadata)
-- `PUT /{id}/publish` → Admin-only publish (generates URL slug)
-
-**Public Feed:** `GET /api/v1/public/blogs/*`
-- Latest (by `createdAt`), Trending (by `viewCount`), Top (by `likesCount` + `viewCount`), Staff Picks
-- All paginated with category filtering (23 categories)
-- Single blog by slug with atomic `incrementViewCount`
-- Platform stats (active users, published blog count)
-- Public settings (maintenance mode, system announcement)
-
-**AI Generation Bridge:** `POST /api/v1/gateway/generate-multimodal`
-- Accepts multipart form: topic, website_url, youtube_url, raw_text, pdf_file
-- `@PreAuthorize` for USER/ADMIN/MASTER_ADMIN
-
-**Master Admin Controls:** `/api/v1/master/*`
-- User management: list, reset quota, toggle active/ban, toggle admin role
-- System error log viewer
-- System prompt CRUD (live AI prompt editing)
-- System settings CRUD (generation limits, maintenance mode, announcements)
-- Author stats (JPQL aggregate: email, username, total blogs, total views)
-- System stats (total users, blogs, generations)
-- AI health check (pings `/health` on AI service)
-- Content review pipeline: get IN_REVIEW blogs, accept → PUBLISHED, reject → REJECTED
-
-**Bookmarks:** `/api/v1/bookmarks/*`
-- Add/remove bookmarks (IDOR protection), paginated list, bookmarked blog IDs
-
 ### 📂 Gateway Project Structure
 
 ```text
@@ -281,7 +238,7 @@ src/main/java/com/saas/gateway/
 │   ├── BlogRepository.java       # JPA Repo + atomic @Modifying incrementViewCount
 │   ├── UserBlogController.java    # User CRUD + state-machine enforcement
 │   ├── AdminBlogController.java   # Tier-2 admin blog management
-│   ├── PublicBlogController.java  # Public feed (212 lines) with pagination, categories, stats
+│   ├── PublicBlogController.java  # Public feed  with pagination, categories, stats
 │   ├── BookmarkController.java    # Bookmark CRUD with IDOR protection
 │   ├── Bookmark.java              # JPA Entity
 │   ├── BookmarkRepository.java    # JPA Repository
@@ -289,9 +246,9 @@ src/main/java/com/saas/gateway/
 ├── gateway/
 │   ├── AiGenerationService.java   # Interface
 │   ├── GatewayController.java     # AI generation endpoint
-│   └── SyncWebClientAiService.java # 209 lines: quota check, prompt loading, multipart marshalling, retry logic, error logging, quota refund
+│   └── SyncWebClientAiService.java # quota check, prompt loading, multipart marshalling, retry logic, error logging, quota refund
 ├── system/
-│   ├── MasterAdminController.java # 246 lines: full platform admin (UserDTO record, user/blog/prompt/settings management, AI health, reviews)
+│   ├── MasterAdminController.java # full platform admin (UserDTO record, user/blog/prompt/settings management, AI health, reviews)
 │   ├── DatabaseSeeder.java        # Seeds prompt, settings, master admin on first boot
 │   ├── SystemPrompt.java          # JPA Entity (promptName, promptText)
 │   ├── SystemSetting.java         # JPA Entity (settingKey, settingValue)
@@ -367,26 +324,6 @@ sequenceDiagram
     FastAPI-->>Gateway: FinalBlogResponse JSON
 ```
 
-### 📚 API Reference
-
-**Generate Blog:** `POST /api/v1/blogs/generate-multimodal`
-| Parameter | Type | Required | Description |
-|---|---|---|---|
-| `system_prompt` | Text | ✅ | Instructions for the LLM (loaded from DB by Gateway) |
-| `topic` | Text | ❌ | Topic override (AI infers from context if empty) |
-| `website_url` | Text | ❌ | Website to scrape (SSRF-protected) |
-| `youtube_url` | Text | ❌ | YouTube video to transcribe |
-| `raw_text` | Text | ❌ | Direct text context |
-| `pdf_file` | File | ❌ | PDF document for text extraction |
-| `X-Internal-Secret` | Header | ✅ | Shared secret for internal auth |
-
-**Response:** `FinalBlogResponse` containing `BlogOutputSchema` (title, seo_description, tags, seo_keywords, category, hero_image_keyword, markdown_content) and `source_context` (raw extracted data).
-
-**Revise Blog:** `POST /api/v1/blogs/revise`
-| Parameter | Type | Required | Description |
-|---|---|---|---|
-| `current_markdown` | JSON | ✅ | Existing blog markdown |
-| `instruction` | JSON | ✅ | Natural language revision instruction |
 
 ### 📂 AI Service Project Structure
 

@@ -88,44 +88,6 @@ com.saas.gateway/
 
 ---
 
-## 🔑 Key Engineering Patterns
-
-### 1. Atomic Quota Management
-```java
-// UserRepository.java — Single atomic SQL eliminates race conditions
-@Modifying @Transactional
-@Query("UPDATE User u SET u.generationsCount = u.generationsCount + 1 WHERE u.id = :id AND u.generationsCount < :limit")
-int incrementQuota(@Param("id") UUID id, @Param("limit") int limit);
-// Returns 0 if limit exceeded → HTTP 429
-```
-
-### 2. Fault-Tolerant AI Bridge
-```java
-// SyncWebClientAiService.java — Handles Render cold starts
-.retryWhen(Retry.fixedDelay(10, Duration.ofSeconds(10))
-    .filter(t -> t instanceof WebClientResponseException
-        ? ((WebClientResponseException) t).getStatusCode().is5xxServerError()
-        : true) // Retry on connection failures too
-)
-.block(Duration.ofMinutes(5));
-// On failure: decrementQuota() + log to SystemErrorLog
-```
-
-### 3. Content State Machine Enforcement
-```java
-// UserBlogController.java — Prevents bait-and-switch
-if (blog.getStatus() == Status.PUBLISHED) {
-    blog.setStatus(Status.IN_REVIEW); // Auto-downgrade
-}
-```
-
-### 4. IDOR Prevention
-```java
-// Every user-scoped query includes userId
-blogRepository.findByIdAndUserId(id, userId)
-```
-
----
 
 ## 🚀 Quick Start
 
@@ -136,7 +98,7 @@ cd gateway-service/gateway-service
 .\mvnw.cmd clean install -DskipTests
 .\mvnw.cmd spring-boot:run
 
-# Mac/Linux
+# Mac/Linux 
 ./mvnw clean install -DskipTests
 ./mvnw spring-boot:run
 ```
@@ -147,12 +109,12 @@ cd gateway-service/gateway-service
 DB_URL=jdbc:postgresql://localhost:5432/blog_saas_db
 DB_USERNAME=postgres
 DB_PASSWORD=your_password
-JWT_SECRET=404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970
-INTERNAL_SECRET=my-super-secret-internal-key-for-ai-worker
-BREVO_API_KEY=your_brevo_api_key
-EMAIL_FROM_ADDRESS=noreply@blogwho.com
-MASTER_ADMIN_EMAIL=master@admin.com
-MASTER_ADMIN_PASSWORD=supersecretmasterpassword
-AI_SERVICE_URL=http://127.0.0.1:8000
+JWT_SECRET=...
+INTERNAL_SECRET=...
+BREVO_API_KEY=...
+EMAIL_FROM_ADDRESS=...
+MASTER_ADMIN_EMAIL=...
+MASTER_ADMIN_PASSWORD=...
+AI_SERVICE_URL=http://[IP_ADDRESS]
 CORS_ALLOWED_ORIGINS=http://localhost:5173
 ```

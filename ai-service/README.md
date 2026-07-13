@@ -66,38 +66,6 @@ ai-service/
 
 ---
 
-## 🔗 API Endpoints
-
-### `GET /health`
-Simple health check. Returns `{"status": "ok", "service": "ai-worker"}`. Pinged by the Master Admin Dashboard for real-time AI health monitoring.
-
-### `POST /api/v1/blogs/generate-multimodal`
-Multi-modal blog generation pipeline.
-
-| Parameter | Type | Required | Description |
-|---|---|---|---|
-| `system_prompt` | Form | ✅ | LLM instructions (loaded from DB by Gateway) |
-| `topic` | Form | ❌ | Topic override (AI infers from context if empty) |
-| `website_url` | Form | ❌ | Website URL to scrape (SSRF-protected) |
-| `youtube_url` | Form | ❌ | YouTube video to extract transcript from |
-| `raw_text` | Form | ❌ | Direct text input |
-| `pdf_file` | File | ❌ | PDF document for text extraction |
-
-**Response:** `FinalBlogResponse` containing:
-- `blog`: `BlogOutputSchema` (title, seo_description, tags, seo_keywords, category, hero_image_keyword, markdown_content)
-- `source_context`: Raw extracted/aggregated text used by the AI
-
-### `POST /api/v1/blogs/revise`
-AI-powered blog content revision.
-
-| Parameter | Type | Required | Description |
-|---|---|---|---|
-| `current_markdown` | JSON | ✅ | Existing blog markdown content |
-| `instruction` | JSON | ✅ | Natural language revision instruction (e.g., "make it more professional") |
-
-**Response:** `BlogReviseResponse` with `revised_markdown`.
-
----
 
 ## 🧩 LangGraph Pipeline Details
 
@@ -116,33 +84,6 @@ Truncates the aggregated context to **30,000 characters** max to prevent Groq AP
 
 ### Node 3: Single Generation (`single_generation_node`)
 Invokes `ChatGroq` (Llama 3.3 70B Versatile) with `structured_output` (JSON mode) using the `BlogOutputSchema` Pydantic model. This ensures the LLM always returns valid, schema-conforming JSON.
-
----
-
-## 🛡️ Security
-
-### Internal Authentication
-Every endpoint (except `/health`) is protected by the `verify_internal_secret` dependency:
-```python
-def verify_internal_secret(x_internal_secret: str = Header(...)):
-    if x_internal_secret != settings.INTERNAL_GATEWAY_SECRET:
-        raise HTTPException(status_code=403, detail="Forbidden")
-```
-**This service is NEVER exposed to end users. Only the Spring Boot Gateway can call it.**
-
-### SSRF Protection (`web_scraper.py`)
-Before fetching any URL, the scraper:
-1. Validates URL scheme (only `http`/`https`)
-2. Resolves hostname to IP via DNS
-3. Checks if the resolved IP is private, loopback, link-local, or multicast
-4. Blocks the request if any check fails
-
-```python
-def is_safe_url(url: str) -> bool:
-    ip = ipaddress.ip_address(socket.gethostbyname(parsed.hostname))
-    if ip.is_private or ip.is_loopback or ip.is_link_local or ip.is_multicast:
-        return False
-```
 
 ---
 
