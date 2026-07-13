@@ -15,7 +15,7 @@ This service is the central nervous system of the Agentic Blogging SaaS platform
 The flowchart below visualizes how requests are intercepted, validated, and routed through the Gateway:
 
 ```mermaid
-%%{init: {'theme': 'base', 'themeVariables': { 'primaryColor': '#ffb3ba', 'secondaryColor': '#ffdfba', 'tertiaryColor': '#ffffba', 'mainBkg': '#bae1ff', 'nodeBorder': '#1e90ff', 'clusterBkg': '#f3e5f5', 'clusterBorder': '#8e24aa', 'lineColor': '#ff6b6b'}}}%%
+%%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#1d4ed8', 'primaryTextColor': '#ffffff', 'primaryBorderColor': '#3b82f6', 'lineColor': '#f43f5e', 'secondaryColor': '#047857', 'tertiaryColor': '#7e22ce', 'noteBkgColor': '#eab308', 'noteTextColor': '#000000', 'textColor': '#ffffff', 'actorBkg': '#7e22ce', 'actorTextColor': '#ffffff', 'signalTextColor': '#ffffff', 'clusterBkg': '#1e293b', 'clusterBorder': '#f43f5e'}}}%%
 flowchart TD
     Client[React Frontend] -->|HTTP Requests| Gateway[Spring Boot Gateway]
     

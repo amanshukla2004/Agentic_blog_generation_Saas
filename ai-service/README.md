@@ -9,7 +9,7 @@ The AI orchestration engine for the Agentic Blog Generation SaaS. This microserv
 ## 🏗️ Architecture
 
 ```mermaid
-%%{init: {'theme': 'base', 'themeVariables': { 'primaryColor': '#ffb3ba', 'secondaryColor': '#ffdfba', 'tertiaryColor': '#ffffba', 'mainBkg': '#bae1ff', 'nodeBorder': '#1e90ff', 'clusterBkg': '#f3e5f5', 'clusterBorder': '#8e24aa', 'lineColor': '#ff6b6b'}}}%%
+%%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#1d4ed8', 'primaryTextColor': '#ffffff', 'primaryBorderColor': '#3b82f6', 'lineColor': '#f43f5e', 'secondaryColor': '#047857', 'tertiaryColor': '#7e22ce', 'noteBkgColor': '#eab308', 'noteTextColor': '#000000', 'textColor': '#ffffff', 'actorBkg': '#7e22ce', 'actorTextColor': '#ffffff', 'signalTextColor': '#ffffff', 'clusterBkg': '#1e293b', 'clusterBorder': '#f43f5e'}}}%%
 sequenceDiagram
     participant Gateway as Spring Boot Gateway
     participant API as FastAPI (/generate-multimodal)
