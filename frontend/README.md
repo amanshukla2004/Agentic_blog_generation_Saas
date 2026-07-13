@@ -1,107 +1,90 @@
-# ✨ Frontend Client (React & Tailwind v4)
+# 🎨 Frontend Client — blogWho.
 
-<p align="center">
-  <img src="https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=black" alt="React" />
-  <img src="https://img.shields.io/badge/Vite-6-646CFF?logo=vite" alt="Vite" />
-  <img src="https://img.shields.io/badge/Tailwind_CSS-4-06B6D4?logo=tailwindcss" alt="Tailwind CSS" />
-  <img src="https://img.shields.io/badge/Redux_Toolkit-2.x-764ABC?logo=redux" alt="Redux Toolkit" />
-  <img src="https://img.shields.io/badge/Framer_Motion-12-0055FF?logo=framer" alt="Framer Motion" />
-  <img src="https://img.shields.io/badge/React_Router-7-CA4245?logo=reactrouter" alt="React Router" />
-  <img src="https://img.shields.io/badge/license-MIT-green.svg" alt="License" />
-</p>
+> React 19 + Tailwind CSS v4 + Redux Toolkit (RTK Query) + Vite 6
 
-This is the user-facing layer of the **Agentic Blogging SaaS** platform. It provides a vibrant community feed, a secure dashboard for managing blog drafts, a Tier 3 Master Admin control panel, and a complex multi-modal form for triggering AI blog generation, communicating strictly with the Spring Boot API Gateway.
+The user-facing layer of the Agentic Blog Generation SaaS platform. Provides a community-driven blog feed, a personal dashboard for managing AI-generated drafts, a split-pane markdown editor with live Mermaid.js diagram rendering, and a comprehensive 8-tab Master Admin control panel.
 
 ---
 
-## 🏗️ Architecture & State Flow
-
-The frontend follows a highly modular architecture focused on performance, predictability, and beautiful UX.
-
-### High-Level Flow
+## 🏗️ Architecture
 
 ```mermaid
 flowchart TD
-    User([User]) --> UI[React UI Components]
+    User([User]) --> Router[React Router v7 + ProtectedRoute]
+    Router -->|Role Validation| Views[16 Pages]
+    Views <--> Store[Redux Store]
     
-    subgraph Frontend Client
-        UI --> Router[React Router v7]
-        Router -->|RBAC Validation| Views[Pages: Feed, Dashboard, Generator]
-        
-        Views <--> Store[Redux Store]
-        Views <--> RTK[RTK Query API Slices]
+    subgraph Store
+        Auth[authSlice: JWT decode + role extraction]
+        API1[authApi: 6 endpoints]
+        API2[blogApi: 17 endpoints]
+        API3[masterApi: 17 endpoints]
+        API4[generationApi: FormData mutation]
+        API5[adminApi: 3 endpoints]
+        API6[publicApi: 1 endpoint]
+        API7[userApi: 3 endpoints]
     end
     
-    RTK -->|HTTP Requests + Auth Headers| Gateway[(Spring Boot API Gateway)]
+    Store -->|fetchBaseQuery + Auto JWT| Gateway[(Spring Boot API)]
 ```
 
-### Core Technologies
+### Key Design Decisions
 
-- **Global State**: We leverage **Redux Toolkit** for centralized, predictable global state management.
-- **Data Fetching & Caching**: **RTK Query** (`fetchBaseQuery`) handles all network requests and caching, automatically attaching JWT tokens to API calls and invalidating cache on mutations. No raw Axios calls are used.
-- **Routing**: **React Router v7** handles layout nesting, lazy loading of views, and Route-Based Access Control (RBAC) to ensure users only see what they have permission for.
-- **Styling**: **Tailwind CSS v4** powers the utility-first design system.
-- **Animations**: **Framer Motion** delivers smooth layout transitions, micro-interactions, and complex orchestrated animations.
-
----
-
-## 🎨 Design System & "Anti-Slop" Principles
-
-We adhere to strict UI/UX guidelines to maintain a premium, tactile, and professional feel:
-
-- **Typography**: Clean legibility using standard sans-serif system fonts (e.g., Inter or Roboto).
-- **Palette**: Neutral base (Zinc) with carefully chosen accent colors. Pure black (`#000000`) is avoided in favor of softer darks (e.g., `#09090b`).
-- **Hard Bans**: No em-dashes (—), no fake UIs, no decorative colored status dots, and no wrapped CTAs.
-- **Motion**: Tactile feedback on buttons (e.g., `active:scale-95` via Framer Motion and Tailwind) ensures the interface feels responsive and alive without being overwhelming.
-
-> [!NOTE]
-> Following these principles is critical to maintaining the premium feel of the platform.
+1. **RTK Query over raw Axios**: All API communication is declarative, cached, and auto-invalidated. Zero manual loading state management.
+2. **JWT in Redux State**: Token is stored in `localStorage` and loaded into Redux on app mount. `prepareHeaders` auto-injects `Bearer` token on every request.
+3. **Role-Aware Routing**: `ProtectedRoute` reads `role` from the decoded JWT payload to conditionally render USER, ADMIN, or MASTER_ADMIN views.
+4. **Custom TUI Design System**: Built a 248-line `Primitives.tsx` component library (Button, Panel, Table, Tabs, Progress bar, StatusBadge, RoleBadge, ThinkingDots, Modal, TopNav) for consistent terminal-aesthetic styling across 16 pages.
 
 ---
 
-## 🛠️ Prerequisites & Setup
+## 📄 Pages Overview
 
-- **Node.js**: v18+
-- **npm** (or yarn/pnpm)
+| Page | Lines | Description |
+|---|---|---|
+| `MasterDashboard.tsx` | 492 | 8-tab Tier-3 admin: Overview, Users, Authors, Blogs, Reviews, Logs, Prompts, Settings |
+| `Editor.tsx` | 308 | Split-pane markdown editor with live preview, Mermaid rendering, AI Revise modal, Publish/Review modal with SEO metadata |
+| `FeedLayout.tsx` | 229 | 3-column public feed: categories sidebar, Latest/Top feed with pagination, Trending/Staff Picks/Top Authors widgets |
+| `BlogViewer.tsx` | 171 | Full blog reader with rich markdown rendering, syntax highlighting, Mermaid diagrams, SEO meta tag injection |
+| `Generate.tsx` | — | Multi-modal AI generation: Topic, Website URL, YouTube URL, Raw Text, PDF upload. Maintenance mode banner. |
+| `Dashboard.tsx` | 93 | User blog management grid with status badges, generation quota display, edit/delete actions |
+| `Register.tsx` | — | Email/password registration → OTP email verification step |
+| `Login.tsx` | — | JWT-based login with credential validation |
+
+---
+
+## 🧩 Component Library (`components/tui/Primitives.tsx`)
+
+| Component | Description |
+|---|---|
+| `Button` | Ghost/Accent/Danger variants with animated hover arrow `▸` |
+| `Panel` | Bordered card with floating label title |
+| `Table` | Column-header table with hover-highlighted rows |
+| `Tabs` | Tab bar with active tab border styling |
+| `Progress` | ASCII block bar: `▕████░░░░▏ 65%` |
+| `StatusBadge` | Color-coded: ✓ success, ✗ error, ○ warning, ▶ running |
+| `RoleBadge` | USER (gray), AUTHOR (yellow), MASTER ADMIN (purple) |
+| `ThinkingDots` | Animated `· ·· ···` loading indicator |
+| `Modal` | Overlay dialog with title, close button, content slot |
+| `TopNav` | Navigation bar with brand, links, Support modal |
+
+---
+
+## 🚀 Quick Start
+
+```bash
+# Install dependencies
+npm install
+
+# Start development server
+npm run dev
+
+# Build for production
+npm run build
+```
 
 ## 🔐 Environment Variables
 
-Create a `.env` file in the root of the `frontend` directory:
-
 ```env
-# Point this to your deployed or local Gateway Service
 VITE_API_BASE_URL=http://localhost:8080/api/v1
-```
-
----
-
-## 🚀 Installation & Running
-
-1. **Install dependencies:**
-   ```bash
-   npm install
-   ```
-
-2. **Run the development server:**
-   ```bash
-   npm run dev
-   ```
-
-3. **Build for production:**
-   ```bash
-   npm run build
-   ```
-
----
-
-## 📂 Project Structure
-
-```text
-src/
-├── components/   # Reusable UI elements, layout components, and complex forms
-├── pages/        # Top-level route views (Home, Dashboard, Generate, Admin, Auth)
-├── store/        # Redux Toolkit store configuration, state slices, and RTK Query endpoints
-├── assets/       # Static assets like images and global CSS
-├── hooks/        # Custom React hooks (e.g., useAuth)
-└── utils/        # Helper functions, constants, and logging utilities
+VITE_SUPPORT_EMAIL=support@blogwho.com
 ```

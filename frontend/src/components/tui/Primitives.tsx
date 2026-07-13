@@ -121,10 +121,10 @@ export const StatusBadge = ({ status, children, className = '' }: any) => {
   if (s.includes('success') || s.includes('published') || s.includes('active')) {
     icon = '✓';
     colorClass = 'text-success';
-  } else if (s.includes('error') || s.includes('fail') || s.includes('banned')) {
+  } else if (s.includes('error') || s.includes('fail') || s.includes('banned') || s.includes('reject')) {
     icon = '✗';
     colorClass = 'text-error';
-  } else if (s.includes('warning') || s.includes('draft')) {
+  } else if (s.includes('warning') || s.includes('draft') || s.includes('review')) {
     icon = '○';
     colorClass = 'text-warning';
   } else if (s.includes('running') || s.includes('building')) {

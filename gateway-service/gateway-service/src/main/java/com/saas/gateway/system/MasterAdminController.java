@@ -14,6 +14,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import com.saas.gateway.blog.BlogRepository;
+import com.saas.gateway.blog.BlogResponseDTO;
+import com.saas.gateway.blog.Status;
 import org.springframework.beans.factory.annotation.Value;
 
 @RestController
@@ -200,5 +202,44 @@ public class MasterAdminController {
             error.put("message", e.getMessage());
             return ResponseEntity.status(502).body(error);
         }
+    }
+    @GetMapping("/blogs/reviews")
+    @PreAuthorize("hasRole('MASTER_ADMIN')")
+    public ResponseEntity<List<BlogResponseDTO>> getReviewRequests() {
+        List<BlogResponseDTO> requests = blogRepository.findByStatus(Status.IN_REVIEW).stream()
+                .map(BlogResponseDTO::fromEntity)
+                .toList();
+        return ResponseEntity.ok(requests);
+    }
+
+    @PutMapping("/blogs/{id}/accept-review")
+    @PreAuthorize("hasRole('MASTER_ADMIN')")
+    public ResponseEntity<BlogResponseDTO> acceptReview(@PathVariable UUID id) {
+        return blogRepository.findById(id).map(blog -> {
+            if (blog.getStatus() != Status.IN_REVIEW) {
+                return ResponseEntity.badRequest().<BlogResponseDTO>build();
+            }
+            blog.setStatus(Status.PUBLISHED);
+            if (blog.getSlug() == null || blog.getSlug().isBlank()) {
+                String title = blog.getTitle();
+                if (title == null || title.isBlank()) title = "untitled-blog";
+                String baseSlug = title.toLowerCase().replaceAll("[^a-z0-9\\s]", "").replaceAll("\\s+", "-");
+                String slug = baseSlug + "-" + blog.getId().toString().substring(0, 8);
+                blog.setSlug(slug);
+            }
+            return ResponseEntity.ok(BlogResponseDTO.fromEntity(blogRepository.save(blog)));
+        }).orElse(ResponseEntity.notFound().build());
+    }
+
+    @PutMapping("/blogs/{id}/reject-review")
+    @PreAuthorize("hasRole('MASTER_ADMIN')")
+    public ResponseEntity<BlogResponseDTO> rejectReview(@PathVariable UUID id) {
+        return blogRepository.findById(id).map(blog -> {
+            if (blog.getStatus() != Status.IN_REVIEW) {
+                return ResponseEntity.badRequest().<BlogResponseDTO>build();
+            }
+            blog.setStatus(Status.REJECTED);
+            return ResponseEntity.ok(BlogResponseDTO.fromEntity(blogRepository.save(blog)));
+        }).orElse(ResponseEntity.notFound().build());
     }
 }

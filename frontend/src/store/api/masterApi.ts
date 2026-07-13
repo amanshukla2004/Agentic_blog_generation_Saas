@@ -54,7 +54,7 @@ export interface AdminBlogSummary {
   id: string;
   title: string;
   slug: string;
-  status: 'DRAFT' | 'PUBLISHED' | 'GENERATING' | 'FAILED';
+  status: 'DRAFT' | 'PUBLISHED' | 'GENERATING' | 'FAILED' | 'IN_REVIEW' | 'REJECTED';
   createdAt: string;
   authorEmail: string;
   isStaffPick: boolean;
@@ -155,6 +155,24 @@ export const masterApi = createApi({
     getAiHealth: builder.query<AiHealth, void>({
       query: () => '/master/ai-health',
     }),
+    getReviewRequests: builder.query<AdminBlogSummary[], void>({
+      query: () => '/master/blogs/reviews',
+      providesTags: ['Blog'],
+    }),
+    acceptReview: builder.mutation<AdminBlogSummary, string>({
+      query: (id) => ({
+        url: `/master/blogs/${id}/accept-review`,
+        method: 'PUT',
+      }),
+      invalidatesTags: ['Blog', 'AuthorStat'],
+    }),
+    rejectReview: builder.mutation<AdminBlogSummary, string>({
+      query: (id) => ({
+        url: `/master/blogs/${id}/reject-review`,
+        method: 'PUT',
+      }),
+      invalidatesTags: ['Blog'],
+    }),
   }),
 });
 
@@ -174,4 +192,7 @@ export const {
   useUpdateSettingMutation,
   useGetSystemStatsQuery,
   useGetAiHealthQuery,
+  useGetReviewRequestsQuery,
+  useAcceptReviewMutation,
+  useRejectReviewMutation,
 } = masterApi;

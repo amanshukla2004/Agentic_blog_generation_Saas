@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
-import { useGetUserBlogsQuery, useUpdateBlogMutation, useReviseBlogMutation, usePublishMyBlogMutation } from '../store/api/blogApi';
+import { useGetUserBlogsQuery, useUpdateBlogMutation, useReviseBlogMutation, usePublishMyBlogMutation, useRequestReviewMutation } from '../store/api/blogApi';
 import { useGetProfileQuery } from '../store/api/userApi';
 import { RootState } from '../store';
 import { Button, Panel, Field, Input } from '../components/tui/Primitives';
@@ -57,7 +57,7 @@ const PublishModal = ({ isOpen, onClose, onPublish, initialSeoDesc, initialKeywo
 
   return (
     <div className="fixed inset-0 bg-bg/90 flex items-center justify-center z-50 p-4">
-      <Panel title={initialSeoDesc ? "Update Metadata" : "Publish Article"} className="max-w-md w-full">
+      <Panel title={initialSeoDesc ? "Update Metadata" : "Publish / Request Review"} className="max-w-md w-full">
         <p className="text-secondary text-xs uppercase tracking-widest mb-6">Review metadata before going live.</p>
         <Field label="SEO Description">
           <textarea
@@ -104,7 +104,7 @@ const PublishModal = ({ isOpen, onClose, onPublish, initialSeoDesc, initialKeywo
         <div className="flex justify-end gap-3 pt-4 border-t border-border mt-4">
           <Button variant="ghost" onClick={onClose}>Cancel</Button>
           <Button variant="accent" onClick={() => onPublish(seoDescInput, seoKeywordsInput, categoryInput)} disabled={!seoDescInput.trim() || !categoryInput.trim()}>
-            {initialSeoDesc ? 'Update' : 'Confirm Publish'}
+            {initialSeoDesc ? 'Update' : 'Confirm'}
           </Button>
         </div>
       </Panel>
@@ -122,6 +122,7 @@ export const Editor = () => {
   
   const [updateBlog] = useUpdateBlogMutation();
   const [publishMyBlog] = usePublishMyBlogMutation();
+  const [requestReview] = useRequestReviewMutation();
   const [reviseBlog] = useReviseBlogMutation();
   
   const { data: profile } = useGetProfileQuery();
@@ -178,21 +179,25 @@ export const Editor = () => {
   };
 
   const handlePublishClick = () => {
-    if (!isAdmin) return;
     setShowSeoModal(true);
   };
 
   const confirmPublish = async (desc: string, keywords: string, cat: string) => {
-    if (!isAdmin || !desc.trim() || !cat.trim()) return;
+    if (!desc.trim() || !cat.trim()) return;
     try {
       await updateBlog({ id: draft.id, rawMarkdown: content, title }).unwrap();
-      await publishMyBlog({ id: draft.id, seoDescription: desc, seoKeywords: keywords, category: cat }).unwrap();
+      if (isAdmin) {
+        await publishMyBlog({ id: draft.id, seoDescription: desc, seoKeywords: keywords, category: cat }).unwrap();
+        alert(draft.status === 'PUBLISHED' ? 'Metadata updated!' : 'Blog published!');
+      } else {
+        await requestReview({ id: draft.id, seoDescription: desc, seoKeywords: keywords, category: cat }).unwrap();
+        alert('Review requested successfully!');
+      }
       setShowSeoModal(false);
-      alert(draft.status === 'PUBLISHED' ? 'Metadata updated!' : 'Blog published!');
-      navigate('/author-dashboard');
+      navigate(isAdmin ? '/author-dashboard' : '/dashboard');
     } catch (e: any) {
       console.error(e);
-      alert('Failed to publish blog: ' + (e?.data?.message || 'Internal Server Error'));
+      alert('Failed to process request: ' + (e?.data?.message || 'Internal Server Error'));
     }
   };
 
@@ -206,10 +211,19 @@ export const Editor = () => {
           <Button variant="ghost" onClick={handleSaveDraft} disabled={saving}>
             {saving ? 'Saving...' : 'Save Draft'}
           </Button>
-          {isAdmin && (
+          {isAdmin ? (
             <Button variant="accent" onClick={handlePublishClick} icon="▸">
               {draft.status === 'PUBLISHED' ? 'Update Meta' : 'Publish'}
             </Button>
+          ) : (
+            (draft.status === 'DRAFT' || draft.status === 'REJECTED') && (
+              <Button variant="accent" onClick={handlePublishClick} icon="▸">
+                Request Review
+              </Button>
+            )
+          )}
+          {!isAdmin && draft.status === 'IN_REVIEW' && (
+            <Button variant="ghost" disabled icon="⏳">In Review</Button>
           )}
         </div>
       </div>

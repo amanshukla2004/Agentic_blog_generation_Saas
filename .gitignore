@@ -96,3 +96,16 @@ gateway-service/gateway-service/test.py
 gateway-service/gateway-service/test2.js
 DEPLOYMENT_GUIDE.md
 .agents/
+
+
+
+security_review.md
+
+
+# Ignore AI Prompts
+prompts/
+
+linked.md
+PROJECT_DETAILS.md
+PROJECT_REFERENCE.md
+resume.md

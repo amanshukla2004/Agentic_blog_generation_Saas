@@ -122,6 +122,14 @@ export const blogApi = createApi({
       }),
       invalidatesTags: ['Blog'],
     }),
+    requestReview: builder.mutation<BlogDraft, { id: string; seoDescription: string; seoKeywords?: string; category: string }>({
+      query: ({ id, ...body }) => ({
+        url: `/blogs/${id}/request-review`,
+        method: 'PUT',
+        body,
+      }),
+      invalidatesTags: ['Blog'],
+    }),
     deleteBlog: builder.mutation<void, string>({
       query: (id) => ({
         url: `/blogs/${id}`,
@@ -170,6 +178,7 @@ export const {
   useGetUserBlogsQuery,
   useUpdateBlogMutation,
   usePublishMyBlogMutation,
+  useRequestReviewMutation,
   useReviseBlogMutation,
   useDeleteBlogMutation,
   useToggleBookmarkMutation,

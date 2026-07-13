@@ -34,7 +34,7 @@ public class PasswordResetService {
         }
 
         User user = optionalUser.get();
-        String otp = String.format("%06d", new SecureRandom().nextInt(999999));
+        String otp = String.format("%06d", new SecureRandom().nextInt(1000000));
         user.setOtp(otp);
         user.setOtpExpiry(LocalDateTime.now().plusMinutes(15));
         userRepository.save(user);

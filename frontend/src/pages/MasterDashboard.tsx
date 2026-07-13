@@ -15,11 +15,14 @@ import {
   useGetSystemSettingsQuery,
   useUpdateSettingMutation,
   useGetSystemStatsQuery,
-  useGetAiHealthQuery
+  useGetAiHealthQuery,
+  useGetReviewRequestsQuery,
+  useAcceptReviewMutation,
+  useRejectReviewMutation
 } from '../store/api/masterApi';
 import { Button, Table, Tabs, RoleBadge, Progress, StatusBadge, Input, Field } from '../components/tui/Primitives';
 
-type Tab = 'OVERVIEW' | 'USERS' | 'AUTHORS' | 'BLOGS' | 'LOGS' | 'PROMPTS' | 'SETTINGS';
+type Tab = 'OVERVIEW' | 'USERS' | 'AUTHORS' | 'BLOGS' | 'REVIEWS' | 'LOGS' | 'PROMPTS' | 'SETTINGS';
 
 export const MasterDashboard: React.FC = () => {
   const navigate = useNavigate();
@@ -40,6 +43,10 @@ export const MasterDashboard: React.FC = () => {
   
   const { data: settings } = useGetSystemSettingsQuery();
   const [updateSetting] = useUpdateSettingMutation();
+
+  const { data: reviewRequests, isLoading: reviewsLoading, refetch: refetchReviews } = useGetReviewRequestsQuery();
+  const [acceptReview] = useAcceptReviewMutation();
+  const [rejectReview] = useRejectReviewMutation();
 
   const [promptText, setPromptText] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
@@ -128,6 +135,17 @@ export const MasterDashboard: React.FC = () => {
     }
   };
 
+  const handleAcceptReview = async (id: string) => {
+    await acceptReview(id);
+    refetchReviews();
+    refetchBlogs();
+  };
+
+  const handleRejectReview = async (id: string) => {
+    await rejectReview(id);
+    refetchReviews();
+  };
+
   const renderUserRow = (user: any) => {
     const limit = user.role === 'ADMIN' ? Number(adminLimit || 30) : Number(userLimit || 6);
     return (
@@ -214,6 +232,40 @@ export const MasterDashboard: React.FC = () => {
     </>
   );
 
+  const reviewColumns = ["Title", "Author", "Status", "Created At", "Actions"];
+  
+  const renderReviewRow = (blog: any) => (
+    <>
+      <td className="px-4 py-3 min-w-[200px]">
+        <div className="font-bold">{blog.title}</div>
+        <div className="text-[10px] text-secondary truncate max-w-[300px]">{blog.slug || 'N/A'}</div>
+      </td>
+      <td className="px-4 py-3 text-secondary">{blog.authorEmail}</td>
+      <td className="px-4 py-3">
+        <StatusBadge status="WARNING">
+          IN REVIEW
+        </StatusBadge>
+      </td>
+      <td className="px-4 py-3 text-secondary text-xs">{new Date(blog.createdAt).toLocaleDateString()}</td>
+      <td className="px-4 py-3 flex gap-2">
+        <Button 
+          variant="accent" 
+          onClick={() => handleAcceptReview(blog.id)} 
+          className="text-[10px] px-2 py-1 h-auto"
+        >
+          Accept
+        </Button>
+        <Button 
+          variant="danger" 
+          onClick={() => handleRejectReview(blog.id)} 
+          className="text-[10px] px-2 py-1 h-auto"
+        >
+          Reject
+        </Button>
+      </td>
+    </>
+  );
+
   return (
     <div className="max-w-7xl mx-auto px-4 py-8 font-mono text-sm [--tw-accent:theme(colors.role-master)]">
       <div className="mb-6">
@@ -222,7 +274,7 @@ export const MasterDashboard: React.FC = () => {
       </div>
 
       <Tabs 
-        tabs={['OVERVIEW', 'USERS', 'AUTHORS', 'BLOGS', 'LOGS', 'PROMPTS', 'SETTINGS']} 
+        tabs={['OVERVIEW', 'USERS', 'AUTHORS', 'BLOGS', 'REVIEWS', 'LOGS', 'PROMPTS', 'SETTINGS']} 
         activeTab={activeTab} 
         onTabChange={(tab: Tab) => setActiveTab(tab)} 
       />
@@ -296,6 +348,16 @@ export const MasterDashboard: React.FC = () => {
               <p className="text-secondary uppercase tracking-widest text-xs">Loading blogs...</p>
             ) : (
               <Table columns={blogColumns} data={blogsData?.content || []} renderRow={renderBlogRow} />
+            )}
+          </div>
+        )}
+
+        {activeTab === 'REVIEWS' && (
+          <div className="w-full">
+            {reviewsLoading ? (
+              <p className="text-secondary uppercase tracking-widest text-xs">Loading reviews...</p>
+            ) : (
+              <Table columns={reviewColumns} data={reviewRequests || []} renderRow={renderReviewRow} />
             )}
           </div>
         )}

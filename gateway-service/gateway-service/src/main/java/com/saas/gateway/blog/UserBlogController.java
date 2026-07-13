@@ -58,6 +58,9 @@ public class UserBlogController {
             if (title != null && !title.isBlank()) {
                 blog.setTitle(title);
             }
+            if (blog.getStatus() == Status.PUBLISHED) {
+                blog.setStatus(Status.IN_REVIEW);
+            }
             return ResponseEntity.ok(BlogResponseDTO.fromEntity(blogRepository.save(blog)));
         }).orElse(ResponseEntity.notFound().build());
     }
@@ -73,6 +76,9 @@ public class UserBlogController {
             }
             String revisedMarkdown = aiGenerationService.reviseBlog(blog.getRawMarkdown(), instruction).block();
             blog.setRawMarkdown(revisedMarkdown);
+            if (blog.getStatus() == Status.PUBLISHED) {
+                blog.setStatus(Status.IN_REVIEW);
+            }
             return ResponseEntity.ok(BlogResponseDTO.fromEntity(blogRepository.save(blog)));
         }).orElse(ResponseEntity.notFound().build());
     }
@@ -84,6 +90,36 @@ public class UserBlogController {
         return blogRepository.findByIdAndUserId(id, userId).map(blog -> {
             blogRepository.delete(blog);
             return ResponseEntity.noContent().<Void>build();
+        }).orElse(ResponseEntity.notFound().build());
+    }
+
+    @PutMapping("/{id}/request-review")
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN', 'MASTER_ADMIN')")
+    public ResponseEntity<BlogResponseDTO> requestReview(@PathVariable UUID id, @RequestBody Map<String, String> body, Principal principal) {
+        UUID userId = UUID.fromString(principal.getName());
+        return blogRepository.findByIdAndUserId(id, userId).map(blog -> {
+            String customSeo = body.get("seoDescription");
+            String category = body.get("category");
+            String seoKeywords = body.get("seoKeywords");
+
+            if (customSeo == null || customSeo.isBlank() || category == null || category.isBlank()) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Description and Category are required");
+            }
+
+            if (blog.getStatus() == Status.PUBLISHED || blog.getStatus() == Status.IN_REVIEW) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Cannot request review for a blog that is already in review or published");
+            }
+
+            blog.setSeoDescription(customSeo);
+            blog.setCategory(category);
+            
+            if (seoKeywords != null && !seoKeywords.isBlank()) {
+                blog.setSeoKeywords(seoKeywords);
+            }
+
+            blog.setStatus(Status.IN_REVIEW);
+
+            return ResponseEntity.ok(BlogResponseDTO.fromEntity(blogRepository.save(blog)));
         }).orElse(ResponseEntity.notFound().build());
     }
 
