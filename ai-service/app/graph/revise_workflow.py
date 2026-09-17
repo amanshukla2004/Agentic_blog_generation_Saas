@@ -8,7 +8,7 @@ def revise_blog_content(request: BlogReviseRequest) -> BlogReviseResponse:
     Uses LLM to revise existing markdown content based on user instructions.
     This acts like an intelligent chat-based editor for the user.
     """
-    llm = ChatGroq(api_key=settings.GROQ_API_KEY, model="llama-3.3-70b-versatile")
+    llm = ChatGroq(api_key=settings.GROQ_API_KEY, model="openai/gpt-oss-120b")
     structured_llm = llm.with_structured_output(BlogReviseResponse, method="json_mode")
     
     prompt = ChatPromptTemplate.from_messages([
