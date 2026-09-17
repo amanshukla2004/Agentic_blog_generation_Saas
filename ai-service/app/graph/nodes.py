@@ -46,7 +46,7 @@ def context_optimizer_node(state: GraphState) -> dict:
 def single_generation_node(state: GraphState) -> dict:
     """Uses LLM with structured output to generate the blog in one API call."""
     logger.info("Invoking LLM to generate the final structured blog output")
-    llm = ChatGroq(api_key=settings.GROQ_API_KEY, model="llama-3.3-70b-versatile")
+    llm = ChatGroq(api_key=settings.GROQ_API_KEY, model="openai/gpt-oss-120b")
     structured_llm = llm.with_structured_output(BlogOutputSchema, method="json_mode")
     
     prompt = ChatPromptTemplate.from_messages([
